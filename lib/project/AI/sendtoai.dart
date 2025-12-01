@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:test_project/project/apikey.dart';
 class  SendToAI{
-  String api = 'AIzaSyBTu0yxOoeMEW1n2VwIon0G2_yoJKwaEjY';
+  String api = ApiKey.api_key;
   String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   Future<Map<String,dynamic>>  checkGrammar(String paragraph) async{
     String prompt = '''
@@ -10,7 +11,7 @@ class  SendToAI{
       Analyze this text: "$paragraph".
       Return ONLY a JSON object with these exact keys:
       - "point": integer (0-10). Be strict.
-      - "errors": string (short descriptions of mistakes),if this have no error then return 'Không có lỗi',Reply this in Vietnamese.
+      - "errors": string (descriptions of mistakes, point it out, each mistake in one line,Reply this in Vietnamese),if this have no error then return 'Không có lỗi'.
       - "suggests": string (what to change to make it smoother),Do not reply this in Vietnamese.
       Do not use Markdown. Do not add explanations.
     ''';

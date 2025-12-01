@@ -60,7 +60,7 @@ class ErrorAndSuggest extends StatelessWidget {
           const SizedBox(height: 32,),
           myCard(Theme.of(context).primaryColor,Icons.book_outlined,paragraph, context),
           const SizedBox(height: 32,),
-          myCard(Colors.redAccent,Icons.close,'Lỗi: $error', context),
+          myCard(Colors.redAccent,Icons.close,'Lỗi:\n $error', context),
           const SizedBox(height: 32,),
           myCard(Colors.greenAccent,Icons.edit_outlined,'Gợi ý: $suggest', context),
 
