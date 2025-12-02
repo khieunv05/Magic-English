@@ -56,31 +56,27 @@ class ErrorAndSuggest extends StatelessWidget {
                 indent: 4,
                 endIndent: 4,
               ),
-              Column(
-                children: [
-                  (error == null || error.isEmpty) ?
-                      Expanded(child: Row(
-                        children: [
-                          CircleAvatar(child: Icon(icon),),
-                          const SizedBox(width: 16,),
-                          Text('Không có lỗi',style: Theme.of(context).textTheme.bodyMedium,)
-                        ],
-                      ))
-                  : Expanded(child: ListView.separated(itemBuilder: (context,index){
-                    return Expanded(
+              (error == null || error.isEmpty) ?
+                  Expanded(child: Text('Không có lỗi',style:
+                    Theme.of(context).textTheme.bodyMedium,))
+              :
+              Expanded(
+                child: Column(
+                  children:
+                    List.generate(message.length,(index){
+                      return Padding(padding: const EdgeInsets.all(8),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(child: Icon(icon),),
-                          const SizedBox(width: 16,),
-                          Text(message[index],style: Theme.of(context).textTheme.bodyMedium,)
+                          Icon(icon),
+                          const SizedBox(width: 8,),
+                          Expanded(child: Text(message[index],style: Theme.of(context).textTheme.bodyMedium,))
                         ],
-                      ),
-                    );
-                  },
-                      separatorBuilder: (context,index){
-                        return const SizedBox(height: 8,);
-                      }, itemCount: message.length))
-                ],
+                      ),);
+
+                    })
+                  ,
+                ),
               )
             ],
           ),
