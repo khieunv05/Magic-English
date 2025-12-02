@@ -63,7 +63,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
                 if(!context.mounted) return;
                 Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
                 point: result['point'],paragraph: _controller.text,
-                    error: result['errors'] ?? 'Không có lỗi', suggest: result['suggests']??'Không có gợi ý')));
+                    error: result['errors'] ?? [], suggest: result['suggests']??'Không có gợi ý')));
               }
             }, child: Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),

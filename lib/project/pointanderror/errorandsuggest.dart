@@ -4,12 +4,12 @@ import 'package:test_project/project/theme/apptheme.dart';
 void main(){
   runApp(MaterialApp(theme: AppTheme.appTheme
   ,home:const ErrorAndSuggest(paragraph: 'My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu',
-        error: 'Test', suggest: 'Test',point: 3,),));
+        error: ['Test','Test2'], suggest: 'Test',point: 3,),));
 }
 class ErrorAndSuggest extends StatelessWidget {
   final int point;
   final String paragraph;
-  final String error;
+  final List<String> error;
   final String suggest;
   Widget myCard(Color backgroundCircleAvatarColor,IconData icon,String message,BuildContext context){
     return Card(
@@ -37,6 +37,57 @@ class ErrorAndSuggest extends StatelessWidget {
       ),
     );
 }
+  Widget myListCard(Color backgroundCircleAvatarColor,IconData icon,List<String> message,BuildContext context){
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                backgroundColor: backgroundCircleAvatarColor,
+                child: Icon(icon),
+              ),
+              const VerticalDivider(
+                width: 28,
+                thickness: 2,
+                color: AppTheme.blackColor,
+                indent: 4,
+                endIndent: 4,
+              ),
+              Column(
+                children: [
+                  (error == null || error.isEmpty) ?
+                      Expanded(child: Row(
+                        children: [
+                          CircleAvatar(child: Icon(icon),),
+                          const SizedBox(width: 16,),
+                          Text('Không có lỗi',style: Theme.of(context).textTheme.bodyMedium,)
+                        ],
+                      ))
+                  : Expanded(child: ListView.separated(itemBuilder: (context,index){
+                    return Expanded(
+                      child: Row(
+                        children: [
+                          CircleAvatar(child: Icon(icon),),
+                          const SizedBox(width: 16,),
+                          Text(message[index],style: Theme.of(context).textTheme.bodyMedium,)
+                        ],
+                      ),
+                    );
+                  },
+                      separatorBuilder: (context,index){
+                        return const SizedBox(height: 8,);
+                      }, itemCount: message.length))
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   const ErrorAndSuggest({super.key,required this.point, required this.paragraph, required this.error, required this.suggest});
 
 
@@ -60,7 +111,7 @@ class ErrorAndSuggest extends StatelessWidget {
           const SizedBox(height: 32,),
           myCard(Theme.of(context).primaryColor,Icons.book_outlined,paragraph, context),
           const SizedBox(height: 32,),
-          myCard(Colors.redAccent,Icons.close,'Lỗi: $error', context),
+          myListCard(Colors.redAccent,Icons.close,error, context),
           const SizedBox(height: 32,),
           myCard(Colors.greenAccent,Icons.edit_outlined,'Gợi ý: $suggest', context),
 
