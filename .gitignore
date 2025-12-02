@@ -48,3 +48,4 @@ app.*.map.json
 /lib/login.dart
 /lib/main.dart
 /lib/test.dart
+/lib/project/apikey.dart

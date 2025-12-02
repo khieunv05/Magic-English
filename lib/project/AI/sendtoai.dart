@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:test_project/project/apikey.dart';
 class  SendToAI{
-  String api = 'AIzaSyBTu0yxOoeMEW1n2VwIon0G2_yoJKwaEjY';
+  String api = ApiKey.api_key;
   String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   Future<Map<String,dynamic>>  checkGrammar(String paragraph) async{
     String prompt = '''
