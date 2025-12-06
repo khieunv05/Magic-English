@@ -11,4 +11,12 @@ class Database{
         .doc(user.uid).collection('writing_history');
     await path.add(writingDto.toMap());
   }
+  static Future<void> deleteParagraph(String paragraphId) async{
+    final user = FirebaseAuth.instance.currentUser;
+    if(user == null) return;
+    CollectionReference path = FirebaseFirestore.instance.collection('users')
+      .doc(user.uid).collection('writing_history');
+    path.doc(paragraphId).delete();
+
+  }
 }
