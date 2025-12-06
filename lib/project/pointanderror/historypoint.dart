@@ -132,40 +132,9 @@ class HistoryPointState extends State<HistoryPoint> {
 
                         ),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            spacing: 8,
-                            children: [
-                              Text(item.content,style: Theme.of(context).textTheme.bodyLarge,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,),
-                              Text('Lỗi: ',style: Theme.of(context).textTheme.bodyLarge),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: List.generate(item.errors.length>=2 ? 2: item.errors.length, (index){
-                                    return Row(
-                                      children: [
-                                        const CircleAvatar(backgroundColor: Colors.red,
-                                        child: Icon(Icons.close),),
-                                        const SizedBox(width: 8,),
-                                        Expanded(child: Text(item.errors[index],
-                                            style: Theme.of(context).textTheme.bodyMedium))
-                                      ],
-                                    );
-                                  })
-                                ),
-                              ),
-                              Text.rich(TextSpan(
-                                  children: [
-                                    TextSpan(text: 'Gợi ý: ',style: Theme.of(context).textTheme.bodyMedium),
-                                    TextSpan(text: item.suggests,style: Theme.of(context).textTheme.bodySmall)
-                                  ]
-                              ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,)
-                            ],
-                          ),
+                          child: Text(item.content,style: Theme.of(context).textTheme.bodyLarge,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,),
                         )
                       ],
                     ),
