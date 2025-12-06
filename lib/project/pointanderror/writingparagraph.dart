@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:test_project/project/AI/sendtoAI.dart';
 import 'package:test_project/project/base/basescreen.dart';
+import 'package:test_project/project/database/database.dart';
+import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/pointanderror/errorandsuggest.dart';
 import 'package:test_project/project/theme/apptheme.dart';
+import 'package:test_project/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 void main(){
   runApp(MaterialApp(
   theme: AppTheme.appTheme
@@ -61,9 +66,13 @@ class _WritingParagraphState extends State<WritingParagraph> {
               else{
                 final result = await _AI.checkGrammar(_controller.text);
                 if(!context.mounted) return;
+                WritingDto writingDto = WritingDto(result['point'], _controller.text,
+                    List<String>.from(result['errors' ] ?? []), result['suggests']);
+                Database.addToParagraph(writingDto);
                 Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
-                point: result['point'],paragraph: _controller.text,
-                    error: List<String>.from(result['errors']) ?? [], suggest: result['suggests']??'Không có gợi ý')));
+                  writingDto: WritingDto(result['point'], _controller.text,
+                      List<String>.from(result['errors'] ?? []), result['suggests'] ?? ''),
+                )));
               }
             }, child: Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),
@@ -72,4 +81,5 @@ class _WritingParagraphState extends State<WritingParagraph> {
       ),
     ), needBottom: true);
   }
+
 }

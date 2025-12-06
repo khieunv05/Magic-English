@@ -7,6 +7,7 @@ class AppTheme{
       color: primaryColor,
       width: 2
   ));
+  static const avartarCircleRadiusLogin =40.0;
   static const singleChildScrollViewHeight = 80.0;
   static final ThemeData appTheme = ThemeData(
     primaryColor: primaryColor,
@@ -17,7 +18,9 @@ class AppTheme{
       bodyMedium: TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: blackColor,height: 2,
       wordSpacing: 1.5),
       bodySmall: TextStyle(fontSize: 16,fontWeight: FontWeight.w400,color: blackColor,),
-      labelLarge: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white)
+      labelLarge: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white),
+      headlineLarge: TextStyle(fontSize: 32,fontWeight: FontWeight.bold,color: Color.fromARGB(255, 51, 45, 161),
+      fontFamily: 'Aubrey')
     ),
     scaffoldBackgroundColor: secondaryColor,
     textButtonTheme: TextButtonThemeData(
@@ -28,6 +31,22 @@ class AppTheme{
           borderRadius: BorderRadius.circular(28)
         ),
         padding: const EdgeInsets.all(16),
+      )
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(28)),
+        ),
+          padding: const EdgeInsets.all(16),
+        textStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
+
+        )
       )
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -66,6 +85,7 @@ class AppTheme{
       filled: true,
       fillColor: Colors.white,
     ),
+
     iconTheme: const IconThemeData(
       size: 28,
       color: blackColor
