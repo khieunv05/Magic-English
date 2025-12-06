@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:test_project/project/base/basescreen.dart';
 import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/theme/apptheme.dart';
-void main(){
-  runApp(MaterialApp(
-      theme: AppTheme.appTheme
-  ,   home:ErrorAndSuggest(writingDto: WritingDto(5,'Test',['Test1','Test2'],'Suggest'),)
-  ));
-}
 class ErrorAndSuggest extends StatelessWidget {
   final WritingDto writingDto;
   Widget myCard(Color backgroundCircleAvatarColor,IconData icon,String message,BuildContext context){

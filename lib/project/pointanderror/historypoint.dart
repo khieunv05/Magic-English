@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:test_project/project/base/basescreen.dart';
+import 'package:test_project/project/database/database.dart';
 import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/pointanderror/errorandsuggest.dart';
 import 'package:test_project/project/pointanderror/writingparagraph.dart';
@@ -80,7 +81,7 @@ class HistoryPointState extends State<HistoryPoint> {
 
         }
         List<WritingDto> data = snapshot.data!.docs.map((item){
-          return WritingDto.fromMap(item.data() as Map<String,dynamic>);
+          return WritingDto.fromMap(item.id,item.data() as Map<String,dynamic>);
         }).toList();
         return buildBody(data,context);
       },
@@ -135,7 +136,10 @@ class HistoryPointState extends State<HistoryPoint> {
                           child: Text(item.content,style: Theme.of(context).textTheme.bodyLarge,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,),
-                        )
+                        ),
+                        IconButton(onPressed: (){
+                          (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
+                        }, icon: const Icon(Icons.remove_circle_outline))
                       ],
                     ),
                   ),
@@ -156,5 +160,22 @@ class HistoryPointState extends State<HistoryPoint> {
         const SizedBox(height: AppTheme.singleChildScrollViewHeight,)
       ],
     );
+  }
+  void deleteParagraphButton(String paragraphId){
+    showDialog(context: context, builder: (context){
+      return AlertDialog(title: const Text('Bạn có muốn xóa không?'),
+        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        actionsAlignment: MainAxisAlignment.spaceAround,
+        actions: [
+          IconButton(onPressed: (){
+            Database.deleteParagraph(paragraphId);
+            Navigator.pop(context);
+          }, icon: const Icon(Icons.verified_user_outlined)),
+          IconButton(onPressed: (){
+            Navigator.pop(context);
+          }, icon: const Icon(Icons.cancel))
+        ],
+      );
+    });
   }
 }
