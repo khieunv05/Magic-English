@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:test_project/project/base/basescreen.dart';
+import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/theme/apptheme.dart';
 void main(){
-  runApp(MaterialApp(theme: AppTheme.appTheme
-  ,home:const ErrorAndSuggest(paragraph: 'My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu,My name is Khieu',
-        error: ['Test','Test2'], suggest: 'Test',point: 3,),));
+  runApp(MaterialApp(
+      theme: AppTheme.appTheme
+  ,   home:ErrorAndSuggest(writingDto: WritingDto(5,'Test',['Test1','Test2'],'Suggest'),)
+  ));
 }
 class ErrorAndSuggest extends StatelessWidget {
-  final int point;
-  final String paragraph;
-  final List<String> error;
-  final String suggest;
+  final WritingDto writingDto;
   Widget myCard(Color backgroundCircleAvatarColor,IconData icon,String message,BuildContext context){
     return Card(
       child: Padding(
@@ -56,7 +55,7 @@ class ErrorAndSuggest extends StatelessWidget {
                 indent: 4,
                 endIndent: 4,
               ),
-              (error == null || error.isEmpty) ?
+              (writingDto.errors == null || writingDto.errors.isEmpty) ?
                   Expanded(child: Text('Không có lỗi',style:
                     Theme.of(context).textTheme.bodyMedium,))
               :
@@ -68,7 +67,10 @@ class ErrorAndSuggest extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(icon),
+                          CircleAvatar(
+                            backgroundColor: backgroundCircleAvatarColor,
+                            child: Icon(icon),
+                          ),
                           const SizedBox(width: 8,),
                           Expanded(child: Text(message[index],style: Theme.of(context).textTheme.bodyMedium,))
                         ],
@@ -84,8 +86,9 @@ class ErrorAndSuggest extends StatelessWidget {
       ),
     );
   }
-  const ErrorAndSuggest({super.key,required this.point, required this.paragraph, required this.error, required this.suggest});
 
+
+  const ErrorAndSuggest({super.key, required this.writingDto,});
 
   @override
   Widget build(BuildContext context) {
@@ -100,16 +103,16 @@ class ErrorAndSuggest extends StatelessWidget {
       child: Column(
         children: [
           CircleAvatar(
-            backgroundColor: getBackgroundColorFromPoint(point),
+            backgroundColor: getBackgroundColorFromPoint(writingDto.point),
             radius: 32,
-            child: Text(point.toString(),style: Theme.of(context).textTheme.titleLarge,),
+            child: Text(writingDto.point.toString(),style: Theme.of(context).textTheme.titleLarge,),
           ),
           const SizedBox(height: 32,),
-          myCard(Theme.of(context).primaryColor,Icons.book_outlined,paragraph, context),
+          myCard(Theme.of(context).primaryColor,Icons.book_outlined,writingDto.content, context),
           const SizedBox(height: 32,),
-          myListCard(Colors.redAccent,Icons.close,error, context),
+          myListCard(Colors.redAccent,Icons.close,writingDto.errors, context),
           const SizedBox(height: 32,),
-          myCard(Colors.greenAccent,Icons.edit_outlined,'Gợi ý: $suggest', context),
+          myCard(Colors.greenAccent,Icons.edit_outlined,'Gợi ý: ${writingDto.suggests}', context),
 
         ],
       ),
