@@ -3,12 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:test_project/project/base/baseloginscreen.dart';
 import 'package:test_project/project/theme/apptheme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-void main(){
-  runApp(MaterialApp(
-    theme: AppTheme.appTheme,
-    home: const SignUp(),
-  ));
-}
+
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
 
