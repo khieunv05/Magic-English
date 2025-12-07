@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'magic-english-b7acd.firebasestorage.app',
     measurementId: 'G-XQLX059P2Z',
   );
+
 }
