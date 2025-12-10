@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:test_project/project/apikey.dart';
 class  SendToAI{
   String api = ApiKey.api_key;
-  String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
   Future<Map<String,dynamic>>  checkGrammar(String paragraph) async{
     String prompt = '''
       Act as a strict English grammar teacher.

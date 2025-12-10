@@ -5,14 +5,7 @@ import 'package:test_project/project/database/database.dart';
 import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/pointanderror/errorandsuggest.dart';
 import 'package:test_project/project/theme/apptheme.dart';
-import 'package:test_project/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-void main(){
-  runApp(MaterialApp(
-  theme: AppTheme.appTheme
-  ,home: const WritingParagraph()));
-}
+
 class WritingParagraph extends StatefulWidget {
   const WritingParagraph({super.key});
 
@@ -50,7 +43,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
           SizedBox(
             width: double.infinity,
             child: TextButton(onPressed: () async {
-              if(_controller.text == null || _controller.text.trim().isEmpty){
+              if(_controller.text.trim().isEmpty){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
                     content: Text('Vui lòng không bỏ trống',
@@ -67,7 +60,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
                 final result = await _AI.checkGrammar(_controller.text);
                 if(!context.mounted) return;
                 WritingDto writingDto = WritingDto(result['point'], _controller.text,
-                    List<String>.from(result['errors' ] ?? []), result['suggests']);
+                    List<String>.from(result['errors' ] ?? []), result['suggests'] ?? '');
                 Database.addToParagraph(writingDto);
                 Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
                   writingDto: WritingDto(result['point'], _controller.text,
@@ -79,7 +72,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
           )
         ],
       ),
-    ), needBottom: true);
+    ), needBottom: true, activeIndex: 2);
   }
 
 }
