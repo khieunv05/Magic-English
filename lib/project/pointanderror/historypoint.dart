@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test_project/core/utils/toast_helper.dart';
 import 'package:test_project/project/base/basescreen.dart';
 import 'package:test_project/project/database/database.dart';
 import 'package:test_project/project/dto/writingdto.dart';
@@ -192,6 +193,8 @@ class HistoryPointState extends State<HistoryPoint> {
           IconButton(onPressed: (){
             Database.deleteParagraph(paragraphId);
             Navigator.pop(context);
+            showTopNotification(context, type: ToastType.success, title:
+                'Xóa thành công', message: '');
           }, icon: const Icon(Icons.verified_user_outlined)),
           IconButton(onPressed: (){
             Navigator.pop(context);
