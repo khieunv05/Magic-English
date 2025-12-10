@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/baseloginscreen.dart';
+import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
 import '../theme/apptheme.dart';
 
 class SignIn extends StatefulWidget {

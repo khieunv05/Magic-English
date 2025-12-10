@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:test_project/core/utils/toast_helper.dart';
-import 'package:test_project/project/base/baseloginscreen.dart';
-import 'package:test_project/project/theme/apptheme.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/base/baseloginscreen.dart';
+import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {

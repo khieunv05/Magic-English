@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
-import 'package:test_project/project/notebooks/notebooks_page.dart';
-import 'package:test_project/navigation/instruction_modal.dart';
-import 'package:test_project/navigation/profile_screen.dart';
-import 'package:test_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/pointanderror/historypoint.dart';
+import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
+import 'package:magic_english_project/navigation/instruction_modal.dart';
+import 'package:magic_english_project/navigation/profile_screen.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
