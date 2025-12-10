@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/home/home_page.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
-import 'package:test_project/core/utils/toast_helper.dart';
-
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/pointanderror/historypoint.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/vocab/vocab_page.dart';
 class NotebooksPage extends StatelessWidget {
   const NotebooksPage({super.key});
 
@@ -40,12 +40,12 @@ class NotebooksPage extends StatelessWidget {
     final parentContext = context;
 
     showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         builder: (BuildContext ctx) {
           bool isLoading = false;
           final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
@@ -55,9 +55,7 @@ class NotebooksPage extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.only(bottom: bottomInset),
               child: SingleChildScrollView(
-                // đảm bảo nội dung có thể scroll khi cần
                 child: ConstrainedBox(
-                  // cho phép modal mở rộng tối đa nhưng vẫn thu gọn với nội dung nhỏ
                   constraints: BoxConstraints(
                     maxHeight: maxHeight,
                   ),
@@ -65,7 +63,7 @@ class NotebooksPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: StatefulBuilder(builder: (context, setState) {
                       return Column(
-                        mainAxisSize: MainAxisSize.min, // rất quan trọng
+                        mainAxisSize: MainAxisSize.min, 
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Center(
@@ -180,10 +178,10 @@ class NotebooksPage extends StatelessWidget {
       needBottom: true,
       activeIndex: 1,
       bottomActions: [
-        () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-        () {},
+            () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
+            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
+            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
+            () {},
       ],
       body: Stack(
         children: [
@@ -207,7 +205,17 @@ class NotebooksPage extends StatelessWidget {
                   mainAxisSpacing: 12,
                   childAspectRatio: 3/3.5,
                   children: [
-                    _buildNotebookCard(context, 'Sổ tay IT', 45),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
+                          ),
+                        );
+                      },
+                      child: _buildNotebookCard(context, 'Sổ tay IT', 45),
+                    ),
                     _buildNotebookCard(context, 'Sổ tay marketing', 47),
                     _buildNotebookCard(context, 'Sổ tay du lịch', 66),
                   ],
@@ -216,17 +224,17 @@ class NotebooksPage extends StatelessWidget {
             ],
           ),
           Positioned(
-            right: 16,
-            bottom: 90,
-            child: FloatingActionButton(
-              onPressed: () => _showCreateNotebookModal(context),
-              shape: const CircleBorder(),
-              backgroundColor: const Color(0xFF3A94E7),
-              child: const Icon(Icons.add, color: Colors.white),
-            )
+              right: 16,
+              bottom: 90,
+              child: FloatingActionButton(
+                onPressed: () => _showCreateNotebookModal(context),
+                shape: const CircleBorder(),
+                backgroundColor: const Color(0xFF3A94E7),
+                child: const Icon(Icons.add, color: Colors.white),
+              )
           ),
         ],
       ),
-      );
+    );
   }
 }

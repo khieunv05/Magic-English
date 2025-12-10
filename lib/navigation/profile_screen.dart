@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/home/home_page.dart';
-import 'package:test_project/project/notebooks/notebooks_page.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
+import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
