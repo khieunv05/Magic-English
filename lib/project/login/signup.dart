@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:test_project/core/utils/toast_helper.dart';
 import 'package:test_project/project/base/baseloginscreen.dart';
 import 'package:test_project/project/theme/apptheme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -146,8 +147,8 @@ class _SignUpState extends State<SignUp> {
         if(_password != _rewritePassword){
           setState(() {
             textErrorMessage = 'Hai mật khẩu không trùng nhau';
-            return;
           });
+          return;
         }
         setState(() {
           isLoading = true;
@@ -163,7 +164,8 @@ class _SignUpState extends State<SignUp> {
         }
         );
         if(mounted){
-          print('Đăng ký thành công');
+          showTopNotification(context, type: ToastType.success, title:
+              'Chúc mừng', message: 'Đăng ký thành công');
         }
       }
 
