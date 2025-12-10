@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:test_project/project/theme/apptheme.dart';
-void main(){
-  runApp(MaterialApp(
-    theme: AppTheme.appTheme,
-    home: BaseScreen(appBar: AppBar(
-      leading: IconButton(onPressed: (){}, icon: Icon(Icons.arrow_back)),
-      title: const Text('Lịch sử chấm điểm & sửa lỗi'),
-    ), body: const Text('Test'),
-    needBottom: true,),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+
 class BaseScreen extends StatelessWidget {
   final AppBar appBar;
   final Widget body;
   final bool needBottom;
-  const BaseScreen({super.key, required this.appBar, required this.body, required this.needBottom});
+  final List<VoidCallback>? bottomActions; // optional callbacks for bottom nav
+  final int activeIndex; // index of active bottom nav (-1 = none)
+  final Color activeColor;
+  const BaseScreen({super.key, required this.appBar, required this.body, required this.needBottom, this.bottomActions, this.activeIndex = -1, Color? activeColor})
+      : activeColor = activeColor ?? const Color(0xFF3A94E7);
 
   @override
   Widget build(BuildContext context) {
+    final actions = bottomActions ?? List<VoidCallback>.filled(4, () {});
     return Scaffold(
       extendBody: true,
       appBar: appBar,
@@ -32,10 +27,10 @@ class BaseScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              IconButton(onPressed: (){}, icon: const Icon(Icons.home_outlined)),
-              IconButton(onPressed: (){}, icon: const Icon(Icons.book_outlined),),
-              IconButton(onPressed: (){}, icon: const Icon(Icons.edit_outlined),),
-              IconButton(onPressed: (){}, icon: const Icon(Icons.person_2_outlined),)
+              IconButton(onPressed: actions[0], icon: Icon(Icons.home_outlined, color: (activeIndex==0)? activeColor : AppTheme.blackColor)),
+              IconButton(onPressed: actions[1], icon: Icon(Icons.book_outlined, color: (activeIndex==1)? activeColor : AppTheme.blackColor)),
+              IconButton(onPressed: actions[2], icon: Icon(Icons.edit_outlined, color: (activeIndex==2)? activeColor : AppTheme.blackColor)),
+              IconButton(onPressed: actions[3], icon: Icon(Icons.person_2_outlined, color: (activeIndex==3)? activeColor : AppTheme.blackColor)),
             ],
           ),
         ),

@@ -49,7 +49,7 @@ class ErrorAndSuggest extends StatelessWidget {
                 indent: 4,
                 endIndent: 4,
               ),
-              (writingDto.errors == null || writingDto.errors.isEmpty) ?
+              (writingDto.errors.isEmpty) ?
                   Expanded(child: Text('Không có lỗi',style:
                     Theme.of(context).textTheme.bodyMedium,))
               :

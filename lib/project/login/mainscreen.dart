@@ -1,29 +1,18 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_project/project/login/signin.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
-import 'package:test_project/project/theme/apptheme.dart';
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MaterialApp(
-    theme: AppTheme.appTheme,
-    home: const MainScreen(),
-  ));
-}
+import 'package:test_project/project/home/home_page.dart';
+import '../../services/shared_preferences_service.dart';
+import '../../services/firebase_service.dart';
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
   Future<bool> checkLogin() async {
-    final pref = await SharedPreferences.getInstance();
-    bool? rememberMe = pref.getBool('remember_me');
-    final user = FirebaseAuth.instance.currentUser;
-    if(user != null && rememberMe!){
+    final bool rememberMe = SharedPreferencesService.instance.getRememberMe();
+    final user = FirebaseService.instance.currentUser;
+    if (user != null && rememberMe) {
       return true;
     }
-    else if(user != null && rememberMe! == false){
-      FirebaseAuth.instance.signOut();
+    if (user != null && !rememberMe) {
+      await FirebaseService.instance.signOut();
       return false;
     }
     return false;
@@ -38,7 +27,7 @@ class MainScreen extends StatelessWidget {
           return const Scaffold(body: CircularProgressIndicator(),);
         }
         if(snapshot.data == true){
-          return const HistoryPoint();
+          return const HomePage(); // show dashboard if logged in
         }
         else{
           return const SignIn();

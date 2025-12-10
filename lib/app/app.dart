@@ -1,0 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:test_project/project/theme/apptheme.dart';
+import 'package:test_project/app/app_router.dart';
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: AppTheme.appTheme,
+      onGenerateRoute: AppRouter.onGenerateRoute,
+      initialRoute: AppRouter.initialRoute,
+    );
+  }
+}
