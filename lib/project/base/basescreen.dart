@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_project/project/theme/apptheme.dart';
 
 class BaseScreen extends StatelessWidget {
-  final AppBar appBar;
+  final PreferredSizeWidget appBar;
   final Widget body;
   final bool needBottom;
   final List<VoidCallback>? bottomActions; // optional callbacks for bottom nav
