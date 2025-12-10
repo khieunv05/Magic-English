@@ -18,6 +18,7 @@ class _SignInState extends State<SignIn> {
   late String _password;
   bool? checkBoxSaveAcoount = false;
   bool canViewPassword = false;
+  String errorMessage = '';
   @override
   Widget build(BuildContext context) {
     return BaseLoginScreen(bodyContent:
@@ -120,7 +121,11 @@ class _SignInState extends State<SignIn> {
         onSaved: (value){
           _password = value!;
         },
-      )
+        
+      ),
+      Text(errorMessage,style: const TextStyle(
+        color: Colors.red,fontSize: 16,fontWeight: FontWeight.w500
+      ),)
 
 
     ],));
@@ -141,8 +146,17 @@ class _SignInState extends State<SignIn> {
           }));
         }
       }
-      catch(e){
-        print('Lỗi $e');
+      on FirebaseAuthException catch(e){
+        if(e.code == 'invalid-email'){
+          setState(() {
+            errorMessage = 'Nhập sai định dạng email';
+          });
+        }
+        if(e.code == 'wrong-password' || e.code == 'invalid-credential'){
+          setState(() {
+            errorMessage = 'Thông tin đăng nhập không chính xác';
+          });
+        }
       }
     }
   }
