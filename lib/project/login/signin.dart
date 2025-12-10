@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:test_project/project/base/baseloginscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
+import 'package:test_project/project/home/home_page.dart';
 import '../theme/apptheme.dart';
-void main(){
-  runApp(MaterialApp(
-    theme: AppTheme.appTheme,
-    home: const SignIn(),
-  ));
-}
+
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
 
@@ -140,8 +135,9 @@ class _SignInState extends State<SignIn> {
         _username, password: _password);
         if(!mounted) return;
         if(userCredential.user != null){
-          Navigator.push(context,MaterialPageRoute(builder: (context){
-            return const HistoryPoint();
+          // Navigate to HomePage after successful login
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
+            return const HomePage();
           }));
         }
       }

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:test_project/project/base/basescreen.dart';
 import 'package:test_project/project/database/database.dart';
@@ -8,14 +7,7 @@ import 'package:test_project/project/dto/writingdto.dart';
 import 'package:test_project/project/pointanderror/errorandsuggest.dart';
 import 'package:test_project/project/pointanderror/writingparagraph.dart';
 import 'package:test_project/project/theme/apptheme.dart';
-void main()async{
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MaterialApp(
-    theme: AppTheme.appTheme,
-    home:  const HistoryPoint(),
-  ));
-}
+import 'package:test_project/project/home/home_page.dart';
 
 class HistoryPoint extends StatefulWidget{
   const HistoryPoint({super.key});
@@ -51,7 +43,7 @@ class HistoryPointState extends State<HistoryPoint> {
 
 
     return BaseScreen(appBar: AppBar(
-      leading: IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back),),
+      leading: IconButton(onPressed: (){ Navigator.of(context).pop(); }, icon: const Icon(Icons.arrow_back),),
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
       centerTitle: true,
     ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
@@ -62,7 +54,7 @@ class HistoryPointState extends State<HistoryPoint> {
         if(snapshot.connectionState == ConnectionState.waiting){
           return const Center(child: CircularProgressIndicator(),);
         }
-        if(snapshot.data!.docs.isEmpty){
+        if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
             return Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +79,15 @@ class HistoryPointState extends State<HistoryPoint> {
       },
 
     ),
-    needBottom: true,);
+    needBottom: true,
+    activeIndex: 2,
+    bottomActions: [
+      () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
+      () {},
+      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WritingParagraph())),
+      () {},
+    ],
+    );
   }
   Color getCardBackgroundColor(int point){
     if(point >=0 && point<5){
@@ -101,61 +101,83 @@ class HistoryPointState extends State<HistoryPoint> {
   Widget buildBody(List<WritingDto> _data,BuildContext context){
     return Column(
       children: [
-        Expanded(child: ListView.separated(itemCount: _data.length,
-          itemBuilder: (context,index){
-            var item = _data[index];
-            return Card(
-              clipBehavior: Clip.hardEdge,
-              child: InkWell(
-                splashColor: Colors.black38.withAlpha(40),
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                      ErrorAndSuggest(writingDto: WritingDto(item.point,item.content,
-                          List<String>.from(item.errors),item.suggests))));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: IntrinsicHeight(
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: getCardBackgroundColor(item.point),
-                          radius: 24,
-                          child: Text(item.point.toString(),
-                            style: Theme.of(context).textTheme.bodyMedium,),
+        Expanded(
+          child: ListView.separated(
+            itemCount: _data.length,
+            itemBuilder: (context, index) {
+              final item = _data[index];
+              return Card(
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  splashColor: Colors.black38.withAlpha(40),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                      ErrorAndSuggest(
+                        writingDto: WritingDto(
+                          item.point,
+                          item.content,
+                          List<String>.from(item.errors),
+                          item.suggests,
                         ),
-                        const VerticalDivider(
-                          color: AppTheme.blackColor,
-                          width: 20,
-                          thickness: 1,
-                          indent: 4,
-                          endIndent: 4,
+                      ),
+                    ));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: getCardBackgroundColor(item.point),
+                            radius: 24,
+                            child: Text(item.point.toString(),
+                              style: Theme.of(context).textTheme.bodyMedium,),
+                          ),
+                          const VerticalDivider(
+                            color: AppTheme.blackColor,
+                            width: 20,
+                            thickness: 1,
+                            indent: 4,
+                            endIndent: 4,
 
-                        ),
-                        Expanded(
-                          child: Text(item.content,style: Theme.of(context).textTheme.bodyLarge,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,),
-                        ),
-                        IconButton(onPressed: (){
-                          (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
-                        }, icon: const Icon(Icons.remove_circle_outline))
-                      ],
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(item.content,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+
+                              ],
+                            ),
+                          ),
+
+                          IconButton(onPressed: (){
+                            (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
+                          }, icon: const Icon(Icons.remove_circle_outline))
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }, separatorBuilder: (BuildContext context, int index) {
-            return const SizedBox(height: 20,);
-          },)),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const SizedBox(height: 20,);
+            },
+          ),
+        ),
         const SizedBox(height: 32,),
         SizedBox(
           width: double.infinity,
           child: TextButton(onPressed: (){
             Navigator.push(context,MaterialPageRoute(builder: (context)=> const WritingParagraph()));
           }, child: Text('Viết đoạn văn',style:
-          Theme.of(context).textTheme.labelLarge,)),
+            Theme.of(context).textTheme.labelLarge,)),
         ),
         const SizedBox(height: AppTheme.singleChildScrollViewHeight,)
       ],
