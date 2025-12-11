@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/login/signup.dart';
+import 'package:magic_english_project/project/login/signup.dart';
 
 import '../theme/apptheme.dart';
 class BaseLoginScreen extends StatelessWidget {

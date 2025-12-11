@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/dto/writingdto.dart';
-import 'package:test_project/project/theme/apptheme.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/project/theme/apptheme.dart';
 class ErrorAndSuggest extends StatelessWidget {
   final WritingDto writingDto;
   Widget myCard(Color backgroundCircleAvatarColor,IconData icon,String message,BuildContext context){

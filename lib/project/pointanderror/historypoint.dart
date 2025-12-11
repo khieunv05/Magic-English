@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test_project/core/utils/toast_helper.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/database/database.dart';
-import 'package:test_project/project/dto/writingdto.dart';
-import 'package:test_project/project/pointanderror/errorandsuggest.dart';
-import 'package:test_project/project/pointanderror/writingparagraph.dart';
-import 'package:test_project/project/theme/apptheme.dart';
-import 'package:test_project/project/home/home_page.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/pointanderror/writingparagraph.dart';
+import 'package:magic_english_project/project/theme/apptheme.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
 
 class HistoryPoint extends StatefulWidget{
   const HistoryPoint({super.key});

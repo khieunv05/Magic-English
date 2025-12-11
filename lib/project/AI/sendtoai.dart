@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:test_project/project/apikey.dart';
+import 'package:magic_english_project/project/apikey.dart';
 class  SendToAI{
   String api = ApiKey.api_key;
   String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
