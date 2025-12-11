@@ -10,20 +10,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Magic English',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // Đặt màu chủ đạo cho BaseScreen
-        primaryColor: const Color(0xFF1E88E5),
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFFF7F7F7),
-        appBarTheme: const AppBarTheme(
-          color: Colors.white,
-          elevation: 0,
-        ),
-      ),
-      home: const MainAppWrapper(selectedIndex: 0),
+    return const Scaffold(
+      body: MainAppWrapper(selectedIndex: 0),
     );
   }
 }
