@@ -86,7 +86,7 @@ class ErrorAndSuggest extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(appBar: AppBar(
+    return Scaffold(appBar: AppBar(
       leading: IconButton(onPressed: (){
         Navigator.of(context).pop();
       }, icon: const Icon(Icons.arrow_back),),
@@ -110,7 +110,7 @@ class ErrorAndSuggest extends StatelessWidget {
 
         ],
       ),
-    ), needBottom: true);
+    ));
   }
   Color getBackgroundColorFromPoint(int point){
     if(point >=0 && point<5){

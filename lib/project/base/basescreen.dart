@@ -29,7 +29,7 @@ class BaseScreen extends StatelessWidget {
           onTap: actions.length > index ? actions[index] : () {},
           borderRadius: BorderRadius.circular(28),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
