@@ -168,21 +168,12 @@ class NotebooksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(
+    return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: (){ Navigator.of(context).pop(); }, icon: const Icon(Icons.arrow_back)),
         title: const Text('Sổ tay của bạn'),
         centerTitle: false,
         elevation: 0,
       ),
-      needBottom: true,
-      activeIndex: 1,
-      bottomActions: [
-            () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-            () {},
-      ],
       body: Stack(
         children: [
           Column(

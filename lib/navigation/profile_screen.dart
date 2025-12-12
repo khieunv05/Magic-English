@@ -18,21 +18,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color magicEnglishPurple = Color(0xFF4A148C);
-    return BaseScreen(
+    return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-        ),
         title: const Text('Thông tin cá nhân'),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-      needBottom: true,
-      activeIndex: 3,
-      bottomActions: _getBottomActions(context),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa cho các item
