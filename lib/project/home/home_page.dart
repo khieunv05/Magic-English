@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:magic_english_project/baiTap/C5/main.dart';
+import 'package:magic_english_project/navigator/tabnavigate.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
 import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
+
+import 'package:magic_english_project/project/theme/apptheme.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -17,12 +21,78 @@ class HomePage extends StatelessWidget {
 }
 class MainAppWrapper extends StatefulWidget {
   final int selectedIndex;
+
   const MainAppWrapper({super.key, required this.selectedIndex});
 
   @override
   State<MainAppWrapper> createState() => _MainAppWrapperState();
 }
 class _MainAppWrapperState extends State<MainAppWrapper> {
+   int selectedIndex = 0;
+  final navigatorStates = [
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>()
+  ];
+
+  List<VoidCallback> _getBottomActions(BuildContext context) {
+    return [
+          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainAppWrapper(selectedIndex: 0))),
+          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
+          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
+          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+        return Scaffold(
+          appBar: null,
+          body: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: IndexedStack(
+                index: selectedIndex,
+
+                children: [
+                  TabNavigate(root: const HomeScreenContent(), navigatorKey: navigatorStates[0]),
+                  TabNavigate(root: const NotebooksPage(), navigatorKey: navigatorStates[1]),
+                  TabNavigate(root: const HistoryPoint(), navigatorKey: navigatorStates[2]),
+                  TabNavigate(root: const ProfileScreen(), navigatorKey: navigatorStates[3]),
+                ],
+                ),
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            selectedItemColor: AppTheme.appTheme.primaryColor,
+              unselectedItemColor: AppTheme.blackColor,
+              unselectedLabelStyle: const TextStyle(
+                color: AppTheme.blackColor
+              ),
+              onTap: (index){
+                setState(() {
+                  selectedIndex = index;
+                });
+              },
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home_outlined),label: 'Trang chủ'),
+                BottomNavigationBarItem(icon: Icon(Icons.book_outlined),label: 'Thêm từ'),
+                BottomNavigationBarItem(icon: Icon(Icons.edit_outlined),label: 'Viết văn'),
+                BottomNavigationBarItem(icon: Icon(Icons.person_2_outlined),label: 'Cá nhân'),
+              ]),
+          );
+    }
+  }
+class HomeScreenContent extends StatefulWidget {
+  const HomeScreenContent({super.key});
+
+  @override
+  State<HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<HomeScreenContent> {
+  String _selectedBarLabel = '';
+  double _selectedBarValue = 0;
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
   String _getLevelDescription(int days) {
@@ -99,7 +169,7 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
     return statContent;
   }
 
-  PreferredSizeWidget _buildCustomAppBar(BuildContext context) {
+  PreferredSizeWidget buildCustomAppBar(BuildContext context) {
     final String calendarTooltip = "Tổng số ngày học của bạn.  " + _getLevelDescription(totalStudyDays);
     final IconData calendarIcon = _getLevelIcon(totalStudyDays);
     final String fireTooltip = "Chuỗi học liên tục của bạn. ";
@@ -143,56 +213,6 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
       ),
     );
   }
-  List<VoidCallback> _getBottomActions(BuildContext context) {
-    return [
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainAppWrapper(selectedIndex: 0))),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    switch (widget.selectedIndex) {
-      case 0:
-        return BaseScreen(
-          appBar: _buildCustomAppBar(context),
-          body: const HomeScreenContent(),
-          needBottom: true,
-          activeIndex: 0,
-          bottomActions: _getBottomActions(context),
-          activeColor: Theme.of(context).primaryColor,
-        );
-      case 1:
-        return const NotebooksPage();
-      case 2:
-        return const HistoryPoint();
-      case 3:
-        return const ProfileScreen();
-      default:
-        return BaseScreen(
-          appBar: _buildCustomAppBar(context),
-          body: const HomeScreenContent(),
-          needBottom: true,
-          activeIndex: 0,
-          bottomActions: _getBottomActions(context),
-          activeColor: Theme.of(context).primaryColor,
-        );
-    }
-  }
-}
-class HomeScreenContent extends StatefulWidget {
-  const HomeScreenContent({super.key});
-
-  @override
-  State<HomeScreenContent> createState() => _HomeScreenContentState();
-}
-
-class _HomeScreenContentState extends State<HomeScreenContent> {
-  String _selectedBarLabel = '';
-  double _selectedBarValue = 0;
-
   final Map<String, double> categoryData = const {
     'Danh từ': 0.11, // 11%
     'Tính từ': 0.24, // 24%
@@ -231,84 +251,87 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   Widget _buildBody(BuildContext context) {
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Bảng điều khiển tiến độ',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              GestureDetector(
-                onTap: () => _showInstructionModal(context),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: infoIconColor, width: 1.5),
-                  ),
-                  child: const Icon(Icons.info_outline, size: 20, color: infoIconColor),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    
+      return Scaffold(
+        appBar: buildCustomAppBar(context),
+        body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildSubHeaderItem(
-                      icon: Icons.folder_open,
-                      text: 'Số từ vựng đã học',
+                    const Text(
+                      'Bảng điều khiển tiến độ',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 12),
-                    _buildSubHeaderItem(
-                      icon: Icons.dashboard_customize,
-                      text: 'Phân loại từ vựng',
+                    GestureDetector(
+                      onTap: () => _showInstructionModal(context),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: infoIconColor, width: 1.5),
+                        ),
+                        child: const Icon(Icons.info_outline, size: 20, color: infoIconColor),
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildSortOptionWithRefresh(
-                      leadingIcon: Icons.pie_chart,
-                      text: 'Phân loại theo từ loại',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPieChartSection(context, categoryData, pieColors),
-                    const SizedBox(height: 20),
-                    _buildSortOptionWithRefresh(
-                      leadingIcon: Icons.bar_chart,
-                      text: 'Phân loại theo cấp độ CEFR',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildBarChart(context, cefrData),
                   ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                width: 70,
-                height: 70,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: amberColor, width: 3),
-                  color: Colors.white,
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSubHeaderItem(
+                            icon: Icons.folder_open,
+                            text: 'Số từ vựng đã học',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSubHeaderItem(
+                            icon: Icons.dashboard_customize,
+                            text: 'Phân loại từ vựng',
+                          ),
+                          const SizedBox(height: 20),
+                          _buildSortOptionWithRefresh(
+                            leadingIcon: Icons.pie_chart,
+                            text: 'Phân loại theo từ loại',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildPieChartSection(context, categoryData, pieColors),
+                          const SizedBox(height: 20),
+                          _buildSortOptionWithRefresh(
+                            leadingIcon: Icons.bar_chart,
+                            text: 'Phân loại theo cấp độ CEFR',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBarChart(context, cefrData),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      width: 70,
+                      height: 70,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: amberColor, width: 3),
+                        color: Colors.white,
+                      ),
+                      child: const Text(
+                        '200',
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  '200',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+        ),
+      );
   }
 
   Widget _buildSubHeaderItem({required IconData icon, required String text, bool isHighlighted = false}) {

@@ -18,7 +18,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
   final SendToAI _AI = SendToAI();
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(appBar: AppBar(
+    return Scaffold(appBar: AppBar(
       leading: IconButton(onPressed: (){
         Navigator.of(context).pop();
       }, icon: const Icon(Icons.arrow_back),),
@@ -72,7 +72,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
           )
         ],
       ),
-    ), needBottom: true, activeIndex: 2);
+    ));
   }
 
 }

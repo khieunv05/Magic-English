@@ -43,8 +43,7 @@ class HistoryPointState extends State<HistoryPoint> {
     }
 
 
-    return BaseScreen(appBar: AppBar(
-      leading: IconButton(onPressed: (){ Navigator.of(context).pop(); }, icon: const Icon(Icons.arrow_back),),
+    return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
       centerTitle: true,
     ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
@@ -80,14 +79,6 @@ class HistoryPointState extends State<HistoryPoint> {
       },
 
     ),
-    needBottom: true,
-    activeIndex: 2,
-    bottomActions: [
-      () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-      () {},
-      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WritingParagraph())),
-      () {},
-    ],
     );
   }
   Color getCardBackgroundColor(int point){
