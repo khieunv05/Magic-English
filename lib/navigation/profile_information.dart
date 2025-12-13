@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/core/utils/toast_helper.dart';
-
+import 'package:magic_english_project/core/utils/toast_helper.dart';
 class UserData {
   String fullName;
   String email;
@@ -117,8 +116,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         userData.gender = _selectedGender ?? userData.gender;
 
         isEditing = false;
-
-        // Gọi hàm thông báo tùy chỉnh
         showTopNotification(
           context,
           type: ToastType.success,
@@ -320,7 +317,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Form(
-        key: _formKey, // Gắn GlobalKey vào Form
+        key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -385,7 +382,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 if (value == null || value.isEmpty) {
                   return 'Vui lòng nhập số điện thoại.';
                 }
-                // Kiểm tra 10 chữ số
                 if (!RegExp(r'^\d{10}$').hasMatch(value)) {
                   return 'SĐT không hợp lệ (10 chữ số).';
                 }
@@ -415,3 +411,4 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 }
+

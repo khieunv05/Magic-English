@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/login/mainscreen.dart';
-import 'package:test_project/project/login/signin.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
+import 'package:magic_english_project/project/login/mainscreen.dart';
+import 'package:magic_english_project/project/login/signin.dart';
+import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 
 class AppRouter {
   static const String initialRoute = '/';

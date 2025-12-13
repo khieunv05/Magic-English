@@ -1,13 +1,14 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:magic_english_project/project/apikey.dart';
 class  SendToAI{
-  String api = '';
-  String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  String api = ApiKey.api_key;
+  String baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
   Future<Map<String,dynamic>>  checkGrammar(String paragraph) async{
     String prompt = '''
       Act as a strict English grammar teacher.
-      Analyze this text: "$paragraph".
+      Analyze this text: """$paragraph""".
       Return ONLY a JSON object with these exact keys:
       - "point": integer (0-10). Be strict.
       - "errors": List of strings (short descriptions of mistakes),if this have no error then return empty list,Reply this in Vietnamese.
