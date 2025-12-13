@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/baiTap/C5/main.dart';
 import 'package:magic_english_project/navigator/tabnavigate.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
@@ -251,7 +250,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   Widget _buildBody(BuildContext context) {
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
-    
+
       return Scaffold(
         appBar: buildCustomAppBar(context),
         body: SingleChildScrollView(
@@ -285,10 +284,32 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSubHeaderItem(
-                            icon: Icons.folder_open,
-                            text: 'Số từ vựng đã học',
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildSubHeaderItem(
+                                icon: Icons.folder_open,
+                                text: 'Số từ vựng đã học',
+                              ),
+                              const SizedBox(width: 16),
+                              Container(
+                                width: 70,
+                                height: 70,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: amberColor, width: 3),
+                                  color: Colors.white,
+                                ),
+                                child: const Text(
+                                  '200',
+                                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
+                                ),
+                              ),
+                            ],
                           ),
+
+
                           const SizedBox(height: 12),
                           _buildSubHeaderItem(
                             icon: Icons.dashboard_customize,
@@ -311,21 +332,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Container(
-                      width: 70,
-                      height: 70,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: amberColor, width: 3),
-                        color: Colors.white,
-                      ),
-                      child: const Text(
-                        '200',
-                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
-                      ),
-                    ),
+
                   ],
                 ),
               ],
