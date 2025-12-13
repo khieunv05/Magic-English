@@ -10,6 +10,8 @@ import 'package:magic_english_project/project/pointanderror/writingparagraph.dar
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 
+import '../../services/firebase_service.dart';
+
 class HistoryPoint extends StatefulWidget{
   const HistoryPoint({super.key});
 
@@ -25,7 +27,7 @@ class HistoryPointState extends State<HistoryPoint> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    User? user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseService.instance.currentUser;
     if(user == null){
       _paragraphStream = const Stream.empty();
     }
