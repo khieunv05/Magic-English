@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/dto/writingdto.dart';
-import 'package:test_project/project/pointanderror/errorandsuggest.dart';
-import 'package:test_project/project/pointanderror/writingparagraph.dart';
-import 'package:test_project/project/theme/apptheme.dart';
-import 'package:test_project/project/home/home_page.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/pointanderror/writingparagraph.dart';
+import 'package:magic_english_project/project/theme/apptheme.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
+
+import '../../services/firebase_service.dart';
 
 class HistoryPoint extends StatefulWidget{
   const HistoryPoint({super.key});
@@ -23,7 +27,7 @@ class HistoryPointState extends State<HistoryPoint> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    User? user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseService.instance.currentUser;
     if(user == null){
       _paragraphStream = const Stream.empty();
     }
@@ -41,8 +45,7 @@ class HistoryPointState extends State<HistoryPoint> {
     }
 
 
-    return BaseScreen(appBar: AppBar(
-      leading: IconButton(onPressed: (){ Navigator.of(context).pop(); }, icon: const Icon(Icons.arrow_back),),
+    return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
       centerTitle: true,
     ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
@@ -72,20 +75,12 @@ class HistoryPointState extends State<HistoryPoint> {
 
         }
         List<WritingDto> data = snapshot.data!.docs.map((item){
-          return WritingDto.fromMap(item.data() as Map<String,dynamic>);
+          return WritingDto.fromMap(item.id,item.data() as Map<String,dynamic>);
         }).toList();
         return buildBody(data,context);
       },
 
     ),
-    needBottom: true,
-    activeIndex: 2,
-    bottomActions: [
-      () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-      () {},
-      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WritingParagraph())),
-      () {},
-    ],
     );
   }
   Color getCardBackgroundColor(int point){
@@ -150,40 +145,14 @@ class HistoryPointState extends State<HistoryPoint> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
-                                Text('Lỗi: ', style: Theme.of(context).textTheme.bodyLarge),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    children: List.generate(
-                                      item.errors.length >= 2 ? 2 : item.errors.length,
-                                      (i) {
-                                        return Row(
-                                          children: [
-                                            const CircleAvatar(backgroundColor: Colors.red,
-                                              child: Icon(Icons.close),),
-                                            const SizedBox(width: 8,),
-                                            Expanded(
-                                              child: Text(item.errors[i], style: Theme.of(context).textTheme.bodyMedium),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(text: 'Gợi ý: ', style: Theme.of(context).textTheme.bodyMedium),
-                                      TextSpan(text: item.suggests, style: Theme.of(context).textTheme.bodySmall),
-                                    ],
-                                  ),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+
                               ],
                             ),
                           ),
+
+                          IconButton(onPressed: (){
+                            (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
+                          }, icon: const Icon(Icons.remove_circle_outline))
                         ],
                       ),
                     ),
@@ -207,5 +176,24 @@ class HistoryPointState extends State<HistoryPoint> {
         const SizedBox(height: AppTheme.singleChildScrollViewHeight,)
       ],
     );
+  }
+  void deleteParagraphButton(String paragraphId){
+    showDialog(context: context, builder: (context){
+      return AlertDialog(title: const Text('Bạn có muốn xóa không?'),
+        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        actionsAlignment: MainAxisAlignment.spaceAround,
+        actions: [
+          IconButton(onPressed: (){
+            Database.deleteParagraph(paragraphId);
+            Navigator.pop(context);
+            showTopNotification(context, type: ToastType.success, title:
+                'Xóa thành công', message: '');
+          }, icon: const Icon(Icons.verified_user_outlined)),
+          IconButton(onPressed: (){
+            Navigator.pop(context);
+          }, icon: const Icon(Icons.cancel))
+        ],
+      );
+    });
   }
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/navigation/profile_information.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/home/home_page.dart';
-import 'package:test_project/project/notebooks/notebooks_page.dart';
-import 'package:test_project/project/pointanderror/historypoint.dart';
-
+import 'package:magic_english_project/navigation/profile_information.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
+import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -20,21 +19,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color magicEnglishPurple = Color(0xFF4A148C);
-    return BaseScreen(
+    return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-        ),
         title: const Text('Thông tin cá nhân'),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-      needBottom: true,
-      activeIndex: 3,
-      bottomActions: _getBottomActions(context),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa cho các item
@@ -47,22 +38,22 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(
                     height: MediaQuery.of(context).size.height / 4,
                     width: double.infinity,
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
 
                         CircleAvatar(
                           radius: 35,
-                          backgroundImage: const AssetImage(
+                          backgroundImage: AssetImage(
                             'assets/images/logo_login.png',
                           ),
                           backgroundColor: Colors.transparent,
                         ),
-                        const SizedBox(width: 15),
-                        const Column(
+                        SizedBox(width: 15),
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               'MAGIC ENGLISH',

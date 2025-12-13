@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/base/baseloginscreen.dart';
+import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/home/home_page.dart';
 import '../theme/apptheme.dart';
 
 class SignIn extends StatefulWidget {
@@ -18,6 +18,7 @@ class _SignInState extends State<SignIn> {
   late String _password;
   bool? checkBoxSaveAcoount = false;
   bool canViewPassword = false;
+  String errorMessage = '';
   @override
   Widget build(BuildContext context) {
     return BaseLoginScreen(bodyContent:
@@ -120,30 +121,56 @@ class _SignInState extends State<SignIn> {
         onSaved: (value){
           _password = value!;
         },
-      )
+        
+      ),
+      Text(errorMessage,style: const TextStyle(
+        color: Colors.red,fontSize: 16,fontWeight: FontWeight.w500
+      ),)
 
 
     ],));
   }
-  Future<void> signIn() async{
-    if(_formKey.currentState!.validate()) {
-      try {
-        final sharedPreferences = await SharedPreferences.getInstance();
-        sharedPreferences.setBool('remember_me', checkBoxSaveAcoount!);
-        _formKey.currentState!.save();
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email:
-        _username, password: _password);
-        if(!mounted) return;
-        if(userCredential.user != null){
-          // Navigate to HomePage after successful login
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-            return const HomePage();
-          }));
+  Future<void> signIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    _formKey.currentState!.save();
+
+    try {
+      print("👉 SIGN IN START");
+      print("Email: $_username");
+      print("Password: $_password");
+
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _username.trim(),
+        password: _password.trim(),
+      );
+
+      print("✅ SIGN IN SUCCESS: ${userCredential.user?.uid}");
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+
+    } on FirebaseAuthException catch (e) {
+      print("❌ FIREBASE ERROR: ${e.code} — ${e.message}");
+
+      setState(() {
+        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          errorMessage = "Sai mật khẩu hoặc email!";
+        } else if (e.code == 'invalid-email') {
+          errorMessage = "Email không hợp lệ!";
+        } else if (e.code == 'user-not-found') {
+          errorMessage = "Không tìm thấy tài khoản!";
+        } else {
+          errorMessage = "Lỗi khác: ${e.code}";
         }
-      }
-      catch(e){
-        print('Lỗi $e');
-      }
+      });
+    } catch (e) {
+      print("❌ OTHER ERROR: $e");
     }
   }
 }

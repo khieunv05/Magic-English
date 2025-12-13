@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/AI/sendtoAI.dart';
-import 'package:test_project/project/base/basescreen.dart';
-import 'package:test_project/project/database/database.dart';
-import 'package:test_project/project/dto/writingdto.dart';
-import 'package:test_project/project/pointanderror/errorandsuggest.dart';
-import 'package:test_project/project/theme/apptheme.dart';
+import 'package:magic_english_project/project/AI/sendtoAI.dart';
+import 'package:magic_english_project/project/base/basescreen.dart';
+import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/theme/apptheme.dart';
 
 class WritingParagraph extends StatefulWidget {
   const WritingParagraph({super.key});
@@ -18,7 +18,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
   final SendToAI _AI = SendToAI();
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(appBar: AppBar(
+    return Scaffold(appBar: AppBar(
       leading: IconButton(onPressed: (){
         Navigator.of(context).pop();
       }, icon: const Icon(Icons.arrow_back),),
@@ -72,7 +72,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
           )
         ],
       ),
-    ), needBottom: true, activeIndex: 2);
+    ));
   }
 
 }

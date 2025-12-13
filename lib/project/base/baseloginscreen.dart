@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_project/project/login/signup.dart';
+import 'package:magic_english_project/project/login/signup.dart';
 
 import '../theme/apptheme.dart';
 class BaseLoginScreen extends StatelessWidget {
@@ -45,13 +45,15 @@ class BaseLoginScreen extends StatelessWidget {
               Text('Hoặc tiếp tục với',style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,),
               const SizedBox(height: 16,),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  CircleAvatar(backgroundColor: Colors.white,radius: 32,
-                  child: Text('Test'),),
-                  CircleAvatar(backgroundColor: Colors.white,radius: 32,
-                  child: Text('Test'),),
+                  CircleAvatar(backgroundColor: Colors.white,radius: 20,
+                  child: Padding(padding: const EdgeInsets.all(8),
+                  child: Image.asset('assets/images/google.png'),),),
+                  CircleAvatar(backgroundColor: Colors.white,radius: 20,
+                    child: Padding(padding: const EdgeInsets.all(8),
+                      child: Image.asset('assets/images/iphone.png'),),),
                 ],
               ),
               const SizedBox(height: 16,),
