@@ -12,66 +12,96 @@ class NotebooksPage extends StatelessWidget {
       String title,
       int count,
       ) {
-    return Card(
-      elevation: 2,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: IntrinsicHeight( // 👈 CHỐT HẠ
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // GÁY SÁCH
+            // Spine
             Container(
               width: 6,
-              decoration: const BoxDecoration(
-                color: Color(0xFF3A94E7),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-              ),
+              color: const Color(0xFF3A94E7),
             ),
 
-            // CONTENT
+            // MAIN CONTENT
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // TITLE + ICON
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(color: Colors.blue),
+                        Expanded(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue,
+                            ),
+                          ),
                         ),
                         const Icon(Icons.bookmark_outline, size: 18),
                       ],
                     ),
-                    const SizedBox(height: 8),
+
+                    const SizedBox(height: 4),
+
+                    // NUMBER
                     Text(
                       '$count',
-                      style: TextStyle(fontSize: 42,color: Colors.black, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 34,   // giảm từ 42 → 34
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    const Text('Từ vựng',style: TextStyle(fontSize: 24,color: Colors.black, fontWeight: FontWeight.w500),),
-                    const SizedBox(height: 6),
-                    const Text('Ngày tạo: 21/12/2025',style: TextStyle(fontSize: 12),),
+
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Từ vựng',
+                      style: TextStyle(
+                        fontSize: 18,   // giảm nhẹ
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    // Khoảng trống vừa đủ để không tràn
+                    const SizedBox(height: 8),
+
+                    // DATE
+                    const Text(
+                      'Ngày tạo: 21/12/2025',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
+
+
 
 
 
