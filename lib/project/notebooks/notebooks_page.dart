@@ -7,32 +7,103 @@ import 'package:magic_english_project/project/vocab/vocab_page.dart';
 class NotebooksPage extends StatelessWidget {
   const NotebooksPage({super.key});
 
-  Widget _buildNotebookCard(BuildContext context, String title, int count) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildNotebookCard(
+      BuildContext context,
+      String title,
+      int count,
+      ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.blue)),
-                const Icon(Icons.bookmark_outline, size: 18),
-              ],
+            // Spine
+            Container(
+              width: 6,
+              color: const Color(0xFF3A94E7),
             ),
-            const SizedBox(height: 12),
-            Text('$count', style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: 4),
-            Text('Từ vựng', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 8),
-            Text('Ngày tạo: 21/12/2025', style: Theme.of(context).textTheme.bodySmall),
+
+            // MAIN CONTENT
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // TITLE + ICON
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                        const Icon(Icons.bookmark_outline, size: 18),
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // NUMBER
+                    Text(
+                      '$count',
+                      style: const TextStyle(
+                        fontSize: 34,   // giảm từ 42 → 34
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Từ vựng',
+                      style: TextStyle(
+                        fontSize: 18,   // giảm nhẹ
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    // Khoảng trống vừa đủ để không tràn
+                    const SizedBox(height: 8),
+
+                    // DATE
+                    const Text(
+                      'Ngày tạo: 21/12/2025',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           ],
         ),
       ),
     );
   }
+
+
+
+
 
   void _showCreateNotebookModal(BuildContext context) {
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -78,7 +149,7 @@ class NotebooksPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
 
-                          Text('Thêm sổ tay', style: Theme.of(context).textTheme.titleLarge),
+                          Text('Thêm sổ tay', style: Theme.of(context).textTheme.titleLarge,),
                           const SizedBox(height: 12),
 
                           Text.rich(
@@ -122,6 +193,8 @@ class NotebooksPage extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3A94E7),
+
                                 minimumSize: const Size.fromHeight(52),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -144,9 +217,10 @@ class NotebooksPage extends StatelessWidget {
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
                                   strokeWidth: 2,
+
                                 ),
                               )
-                                  : const Text('Xác nhận'),
+                                  : const Text('Xác nhận', style: TextStyle(fontSize: 16,color: Colors.white))
                             ),
                           ),
 
@@ -182,9 +256,17 @@ class NotebooksPage extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  ElevatedButton(onPressed: (){}, child: const Text('Tất cả')),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3A94E7),
+                    ),
+                    child: const Text('Tất cả',style: TextStyle(color: Colors.white),),
+                  ),
                   const SizedBox(width: 8),
-                  OutlinedButton(onPressed: (){}, child: const Text('Sổ tay yêu thích')),
+                  ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom(
+                    backgroundColor:  Colors.white,
+                  ), child: const Text('Sổ tay yêu thích',style:TextStyle(color:Colors.black) )),
                 ],
               ),
               const SizedBox(height: 12),
@@ -207,8 +289,30 @@ class NotebooksPage extends StatelessWidget {
                       },
                       child: _buildNotebookCard(context, 'Sổ tay IT', 45),
                     ),
-                    _buildNotebookCard(context, 'Sổ tay marketing', 47),
-                    _buildNotebookCard(context, 'Sổ tay du lịch', 66),
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
+                          ),
+                        );
+                      },
+                      child: _buildNotebookCard(context, 'Sổ tay Marketing', 131),
+                    ),
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
+                          ),
+                        );
+                      },
+                      child: _buildNotebookCard(context, 'Sổ tay NET', 31),
+                    ),
                   ],
                 ),
               ),

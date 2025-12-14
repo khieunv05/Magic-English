@@ -23,7 +23,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
         Navigator.of(context).pop();
       }, icon: const Icon(Icons.arrow_back),),
       title: const Text('Viết đoạn văn',),
-      centerTitle: true,
+      centerTitle: false,
     ), body: SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: AppTheme.singleChildScrollViewHeight),
       child: Column(

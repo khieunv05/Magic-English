@@ -70,13 +70,15 @@ class AppTheme{
     ),
     cardTheme: CardThemeData(
       color: Colors.white,
-      elevation: 4,
+      elevation: 8,
       margin: EdgeInsets.zero,
       shadowColor: blackColor.withAlpha(100),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28)
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: blackColor)
       )
     ),
+
     inputDecorationTheme: InputDecorationTheme(
       hintStyle: const TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: blackColor),
       enabledBorder: textFieldBorder,

@@ -130,34 +130,47 @@ class _SignInState extends State<SignIn> {
 
     ],));
   }
-  Future<void> signIn() async{
-    if(_formKey.currentState!.validate()) {
-      try {
-        final sharedPreferences = await SharedPreferences.getInstance();
-        sharedPreferences.setBool('remember_me', checkBoxSaveAcoount!);
-        _formKey.currentState!.save();
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email:
-        _username, password: _password);
-        if(!mounted) return;
-        if(userCredential.user != null){
-          // Navigate to HomePage after successful login
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-            return const HomePage();
-          }));
+  Future<void> signIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    _formKey.currentState!.save();
+
+    try {
+      print("👉 SIGN IN START");
+      print("Email: $_username");
+      print("Password: $_password");
+
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _username.trim(),
+        password: _password.trim(),
+      );
+
+      print("✅ SIGN IN SUCCESS: ${userCredential.user?.uid}");
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+
+    } on FirebaseAuthException catch (e) {
+      print("❌ FIREBASE ERROR: ${e.code} — ${e.message}");
+
+      setState(() {
+        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          errorMessage = "Sai mật khẩu hoặc email!";
+        } else if (e.code == 'invalid-email') {
+          errorMessage = "Email không hợp lệ!";
+        } else if (e.code == 'user-not-found') {
+          errorMessage = "Không tìm thấy tài khoản!";
+        } else {
+          errorMessage = "Lỗi khác: ${e.code}";
         }
-      }
-      on FirebaseAuthException catch(e){
-        if(e.code == 'invalid-email'){
-          setState(() {
-            errorMessage = 'Nhập sai định dạng email';
-          });
-        }
-        if(e.code == 'wrong-password' || e.code == 'invalid-credential'){
-          setState(() {
-            errorMessage = 'Thông tin đăng nhập không chính xác';
-          });
-        }
-      }
+      });
+    } catch (e) {
+      print("❌ OTHER ERROR: $e");
     }
   }
 }

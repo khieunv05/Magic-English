@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:magic_english_project/navigation/profile_information.dart';
 import 'package:magic_english_project/project/base/basescreen.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
@@ -81,6 +82,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
+            // Nút "Thông tin cá nhân" đã được sửa lỗi cú pháp và thêm điều hướng
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50.0),
               child: SizedBox(
@@ -88,8 +90,11 @@ class ProfileScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Chức năng Thông tin cá nhân chưa được triển khai')),
+                    // *** HÀM ĐƯỢC GỌI để chuyển đến PersonalInfoScreen (ProfileInformation) ***
+                    Navigator.push(
+                      context,
+                      // Sử dụng ProfileInformation (được import)
+                      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -112,6 +117,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            // Nút "Đăng xuất"
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50.0),
               child: SizedBox(
