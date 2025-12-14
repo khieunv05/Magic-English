@@ -65,6 +65,7 @@ flutter:
     - assets/images/logo_login.png
     - assets/images/google.png
     - assets/images/iphone.png
+    - assets/images/logo_intro.jpg
    # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
