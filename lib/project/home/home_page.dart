@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:magic_english_project/navigator/tabnavigate.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
@@ -34,15 +35,13 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>()
   ];
-
-  List<VoidCallback> _getBottomActions(BuildContext context) {
-    return [
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainAppWrapper(selectedIndex: 0))),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-    ];
-  }
+  final tabList =  [
+    const HomeScreenContent(),
+    const NotebooksPage(),
+    const HistoryPoint(),
+    const ProfileScreen()
+  ];
+  Set<int> tabSelected = {0};
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +49,39 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
           appBar: null,
           body: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: IndexedStack(
-                index: selectedIndex,
+            child: PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) async{
+                if(didPop) return;
+                final currentNavigator = navigatorStates[selectedIndex].currentState;
+                if(currentNavigator != null && currentNavigator.canPop()){
+                  currentNavigator.pop();
+                }
+                else{
+                  if(selectedIndex != 0){
+                    setState(() {
+                      selectedIndex = 0;
+                    });
+                  }
+                  else {
+                    await SystemNavigator.pop();
+                  }
+                }
+              },
 
-                children: [
-                  TabNavigate(root: const HomeScreenContent(), navigatorKey: navigatorStates[0]),
-                  TabNavigate(root: const NotebooksPage(), navigatorKey: navigatorStates[1]),
-                  TabNavigate(root: const HistoryPoint(), navigatorKey: navigatorStates[2]),
-                  TabNavigate(root: const ProfileScreen(), navigatorKey: navigatorStates[3]),
-                ],
-                ),
+              child: IndexedStack(
+                  index: selectedIndex,
+
+                  children: List.generate(tabList.length, (index){
+                    if(tabSelected.contains(index)){
+                      return TabNavigate(root: tabList[index], navigatorKey: navigatorStates[index]);
+                    }
+                    else{
+                      return const SizedBox();
+                    }
+                  }),
+                  ),
+            ),
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: selectedIndex,
@@ -71,6 +93,7 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
               onTap: (index){
                 setState(() {
                   selectedIndex = index;
+                  tabSelected.add(index);
                 });
               },
               items: const [
