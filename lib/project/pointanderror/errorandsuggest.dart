@@ -6,10 +6,6 @@ class ErrorAndSuggest extends StatelessWidget {
   final WritingDto writingDto;
 
   const ErrorAndSuggest({super.key, required this.writingDto});
-
-  // ------------------------------
-  // 🔵 CARD CHUNG (Content + Suggest)
-  // ------------------------------
   Widget buildInfoCard({
     required Color avatarColor,
     required IconData icon,
@@ -54,14 +50,10 @@ class ErrorAndSuggest extends StatelessWidget {
       ),
     );
   }
-
-  // ------------------------------
-  // 🔴 CARD LỖI (Many items)
-  // ------------------------------
   Widget buildErrorListCard({
     required Color avatarColor,
     required IconData icon,
-    required List<String> errors,
+    required List<String> mistakes,
     required BuildContext context,
   }) {
     return Container(
@@ -102,7 +94,7 @@ class ErrorAndSuggest extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          if (errors.isEmpty)
+          if (mistakes.isEmpty)
             Text(
               "Không có lỗi nào 🎉",
               style: TextStyle(fontSize: 15, color: Colors.grey[700]),
@@ -110,7 +102,7 @@ class ErrorAndSuggest extends StatelessWidget {
           else
             Column(
               children: List.generate(
-                errors.length,
+                mistakes.length,
                     (index) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -120,7 +112,7 @@ class ErrorAndSuggest extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          errors[index],
+                          mistakes[index],
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontSize: 15,
                             height: 1.45,
@@ -136,10 +128,6 @@ class ErrorAndSuggest extends StatelessWidget {
       ),
     );
   }
-
-  // ------------------------------
-  // 🔵 MÀU CHO ĐIỂM
-  // ------------------------------
   Color getBackgroundColorFromPoint(int point) {
     if (point < 5) return Colors.redAccent;
     if (point < 8) return Colors.orangeAccent;
@@ -154,7 +142,7 @@ class ErrorAndSuggest extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
 
@@ -167,7 +155,7 @@ class ErrorAndSuggest extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // 🟢 ĐIỂM TRUNG TÂM
+
             CircleAvatar(
               radius: 42,
               backgroundColor: getBackgroundColorFromPoint(writingDto.point),
@@ -181,8 +169,6 @@ class ErrorAndSuggest extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-
-            // 📝 BÀI LÀM
             buildInfoCard(
               avatarColor: Theme.of(context).primaryColor,
               icon: Icons.book_outlined,
@@ -192,17 +178,15 @@ class ErrorAndSuggest extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ❌ DANH SÁCH LỖI
             buildErrorListCard(
               avatarColor: Colors.redAccent,
               icon: Icons.close_rounded,
-              errors: writingDto.errors,
+              mistakes: writingDto.mistakes,
               context: context,
             ),
 
             const SizedBox(height: 28),
 
-            // ✨ GỢI Ý
             buildInfoCard(
               avatarColor: Colors.green,
               icon: Icons.lightbulb_outline,

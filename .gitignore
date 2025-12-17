@@ -49,3 +49,4 @@ app.*.map.json
 /lib/main.dart
 /lib/test.dart
 /lib/project/apikey.dart
+/lib/api/node_modules

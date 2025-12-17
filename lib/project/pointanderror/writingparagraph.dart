@@ -5,9 +5,11 @@ import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WritingParagraph extends StatefulWidget {
-  const WritingParagraph({super.key});
+  String? userId;
+  WritingParagraph({super.key,this.userId});
 
   @override
   State<WritingParagraph> createState() => _WritingParagraphState();
@@ -16,11 +18,18 @@ class WritingParagraph extends StatefulWidget {
 class _WritingParagraphState extends State<WritingParagraph> {
   final TextEditingController _controller = TextEditingController();
   final SendToAI _AI = SendToAI();
+  bool didChange = false;
+  bool isLoading = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
       leading: IconButton(onPressed: (){
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(didChange);
       }, icon: const Icon(Icons.arrow_back),),
       title: const Text('Viết đoạn văn',),
       centerTitle: false,
@@ -42,7 +51,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
           const SizedBox(height: 36,),
           SizedBox(
             width: double.infinity,
-            child: TextButton(onPressed: () async {
+            child: TextButton(onPressed:(isLoading == true)? null:  () async {
               if(_controller.text.trim().isEmpty){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
@@ -57,17 +66,25 @@ class _WritingParagraphState extends State<WritingParagraph> {
                 });
               }
               else{
+                setState(() {
+                  isLoading = true;
+                });
                 final result = await _AI.checkGrammar(_controller.text);
                 if(!context.mounted) return;
                 WritingDto writingDto = WritingDto(result['point'], _controller.text,
-                    List<String>.from(result['errors' ] ?? []), result['suggests'] ?? '');
-                Database.addToParagraph(writingDto);
-                Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
+                    List<String>.from(result['mistakes' ] ?? []), result['suggests'] ?? '');
+                Database db = Database();
+                await db.addParagraph(widget.userId!, writingDto);
+                setState(() {
+                  isLoading = false;
+                });
+                didChange = true;
+                 Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
                   writingDto: WritingDto(result['point'], _controller.text,
-                      List<String>.from(result['errors'] ?? []), result['suggests'] ?? ''),
+                      List<String>.from(result['mistakes'] ?? []), result['suggests'] ?? ''),
                 )));
               }
-            }, child: Text('Chấm điểm',
+            }, child:(isLoading == true)?const CircularProgressIndicator() :Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),
           )
         ],

@@ -11,7 +11,7 @@ class  SendToAI{
       Analyze this text: """$paragraph""".
       Return ONLY a JSON object with these exact keys:
       - "point": integer (0-10). Be strict.
-      - "errors": List of strings (short descriptions of mistakes),if this have no error then return empty list,Reply this in Vietnamese.
+      - "mistakes": List of strings (short descriptions of mistakes),if this have no error then return empty list,Reply this in Vietnamese.
       - "suggests": string (what to change to make it smoother),Do not reply this in Vietnamese.
       Do not use Markdown. Do not add explanations.
     ''';

@@ -9,6 +9,7 @@ import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart
 import 'package:magic_english_project/project/pointanderror/writingparagraph.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/firebase_service.dart';
 
@@ -22,41 +23,49 @@ class HistoryPoint extends StatefulWidget{
 
 }
 class HistoryPointState extends State<HistoryPoint> {
-  late final Stream<QuerySnapshot> _paragraphStream;
+  Future<List<WritingDto>>?  _futureParagraph;
+  String? userId;
   @override
-  void initState() {
-    // TODO: implement initState
+  Future<void> getUserIdAndGetData()async{
+    final sharedPre = await SharedPreferences.getInstance();
+    if(!mounted) return;
+    setState(() {
+      userId = sharedPre.getString('userId');
+    });
+    if(userId == null || userId!.isEmpty){
+      return;
+    }
+    Database db = Database();
+    final futureData = db.getAllParagraph(userId!);
+    if(!mounted) return;
+    setState(() {
+      _futureParagraph = futureData;
+    });
+  }
+  @override
+  void initState(){
     super.initState();
-    User? user = FirebaseService.instance.currentUser;
-    if(user == null){
-      _paragraphStream = const Stream.empty();
-    }
-    else{
-      _paragraphStream = FirebaseFirestore.instance.collection('users').doc(user.uid).collection('writing_history')
-          .snapshots();
-
-    }
+    getUserIdAndGetData();
   }
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if(user == null) {
-      return const Center(child: Text('Vui lòng đăng nhập để xem lịch sử'),);
+    if(_futureParagraph == null ) {
+        return const Center(child: CircularProgressIndicator());
     }
 
 
     return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
       centerTitle: false,
-    ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
-      , builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+    ), body: FutureBuilder<List<WritingDto>>(future: _futureParagraph
+      , builder: (BuildContext context, snapshot) {
         if(snapshot.hasError){
           return Center(child: Text('Lỗi: ${snapshot.error}'),);
         }
         if(snapshot.connectionState == ConnectionState.waiting){
           return const Center(child: CircularProgressIndicator(),);
         }
-        if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+        if(!snapshot.hasData || snapshot.data!.isEmpty|| snapshot.data! == []){
             return Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -66,7 +75,7 @@ class HistoryPointState extends State<HistoryPoint> {
               SizedBox(
                 width: double.infinity,
                 child: TextButton(onPressed: (){
-                  Navigator.push(context,MaterialPageRoute(builder: (context)=> const WritingParagraph()));
+                  Navigator.push(context,MaterialPageRoute(builder: (context)=>  WritingParagraph(userId: userId,)));
                 }, child: Text('Viết đoạn văn',style:
                 Theme.of(context).textTheme.labelLarge,)),
               ),
@@ -74,9 +83,7 @@ class HistoryPointState extends State<HistoryPoint> {
           );
 
         }
-        List<WritingDto> data = snapshot.data!.docs.map((item){
-          return WritingDto.fromMap(item.id,item.data() as Map<String,dynamic>);
-        }).toList();
+        List<WritingDto> data = snapshot.data!;
         return buildBody(data,context);
       },
 
@@ -110,7 +117,7 @@ class HistoryPointState extends State<HistoryPoint> {
                         writingDto: WritingDto(
                           item.point,
                           item.content,
-                          List<String>.from(item.errors),
+                          List<String>.from(item.mistakes),
                           item.suggests,
                         ),
                       ),
@@ -177,8 +184,9 @@ class HistoryPointState extends State<HistoryPoint> {
         const SizedBox(height: 32,),
         SizedBox(
           width: double.infinity,
-          child: TextButton(onPressed: (){
-            Navigator.push(context,MaterialPageRoute(builder: (context)=> const WritingParagraph()));
+          child: TextButton(onPressed: () async{
+            bool didChange = await Navigator.push(context,MaterialPageRoute(builder: (context)=>  WritingParagraph(userId: userId,)));
+            if(didChange) getUserIdAndGetData();
           }, child: Text('Viết đoạn văn',style:
             Theme.of(context).textTheme.labelLarge,)),
         ),
@@ -192,11 +200,18 @@ class HistoryPointState extends State<HistoryPoint> {
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
         actionsAlignment: MainAxisAlignment.spaceAround,
         actions: [
-          IconButton(onPressed: (){
-            Database.deleteParagraph(paragraphId);
-            Navigator.pop(context);
-            showTopNotification(context, type: ToastType.success, title:
-                'Xóa thành công', message: '');
+          IconButton(onPressed: ()async{
+            Database db = Database();
+            String? message = await db.deleteParagraph(paragraphId);
+            if(!context.mounted) {
+              return;
+            }
+            bool isSuccess = message == null;
+            Navigator.of(context).pop();
+             showTopNotification(context,
+                 type: (isSuccess)? ToastType.success: ToastType.error,
+                 title: (isSuccess)?'Chúc mừng':'Lỗi',
+                 message: (isSuccess)?'Xóa thành công':message);
           }, icon: const Icon(Icons.verified_user_outlined)),
           IconButton(onPressed: (){
             Navigator.pop(context);

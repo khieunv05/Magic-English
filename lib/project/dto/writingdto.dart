@@ -4,27 +4,28 @@ class WritingDto{
   String? id;
   int point = 0;
   String content = '';
-  List<String> errors = [];
+  List<String> mistakes = [];
   String suggests = '';
   DateTime? createdAt;
-  WritingDto(this.point, this.content, this.errors, this.suggests,[this.id]);
+  WritingDto(this.point, this.content, this.mistakes, this.suggests,[this.id]);
 
 
 
-  WritingDto.fromMap(String this.id,Map<String,dynamic> data){
+  WritingDto.fromMap(Map<String,dynamic> data){
+    id = data['_id'];
     content = data['content'] ??  '';
-    errors = List<String>.from(data['errors'] ?? []);
+    mistakes = List<String>.from(data['mistakes'] ?? []);
     point = data['point'] ?? 0;
-    suggests = data['suggests'] ?? '';
-    createdAt = (data['date'] as Timestamp?)?.toDate();
+    suggests = data['suggest'] ?? '';
+    //createdAt = (data['date'] as Timestamp?)?.toDate();
   }
   Map<String, dynamic> toMap(){
     return {
       'point': point,
       'content': content,
-      'errors': errors,
+      'mistakes': mistakes,
       'suggests':suggests,
-      'date': createdAt ?? FieldValue.serverTimestamp()
+      //'date': createdAt ?? FieldValue.serverTimestamp()
     };
   }
 

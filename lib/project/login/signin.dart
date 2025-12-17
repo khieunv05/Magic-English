@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:magic_english_project/project/database/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import '../theme/apptheme.dart';
@@ -136,41 +138,28 @@ class _SignInState extends State<SignIn> {
     _formKey.currentState!.save();
 
     try {
-      print("👉 SIGN IN START");
-      print("Email: $_username");
-      print("Password: $_password");
-
-      UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _username.trim(),
-        password: _password.trim(),
-      );
-
-      print("✅ SIGN IN SUCCESS: ${userCredential.user?.uid}");
+      Database db = Database();
+      Map<String,String?> rs = await db.login(_username,_password);
 
       if (!mounted) return;
-
+      if(rs['id'] == null){
+        setState(() {
+          errorMessage = rs['message']??"Đăng nhập thất bại";
+        });
+        return;
+      }
+      final sharedPre = await SharedPreferences.getInstance();
+      sharedPre.setString('userId', rs['id']??"");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
 
-    } on FirebaseAuthException catch (e) {
-      print("❌ FIREBASE ERROR: ${e.code} — ${e.message}");
+    }catch (e) {
 
       setState(() {
-        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-          errorMessage = "Sai mật khẩu hoặc email!";
-        } else if (e.code == 'invalid-email') {
-          errorMessage = "Email không hợp lệ!";
-        } else if (e.code == 'user-not-found') {
-          errorMessage = "Không tìm thấy tài khoản!";
-        } else {
-          errorMessage = "Lỗi khác: ${e.code}";
-        }
+        errorMessage = 'Lỗi không xác định';
       });
-    } catch (e) {
-      print("❌ OTHER ERROR: $e");
     }
   }
 }
