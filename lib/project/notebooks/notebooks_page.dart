@@ -28,22 +28,15 @@ class NotebooksPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Row(
           children: [
-            // Spine
-            Container(
-              width: 6,
-              color: const Color(0xFF3A94E7),
-            ),
-
-            // MAIN CONTENT
+            Container(width: 6, color: const Color(0xFF3A94E7)),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // TITLE + ICON
+                    // TITLE + ICONS
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
@@ -57,49 +50,87 @@ class NotebooksPage extends StatelessWidget {
                           ),
                         ),
                         const Icon(Icons.bookmark_outline, size: 18),
+                        const SizedBox(width: 6),
+
+                        // MORE BUTTON
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert, size: 18),
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showEditNotebookModal(
+                                context,
+                                oldName: title,
+                              );
+                            } else if (value == 'delete') {
+                              showDeleteNotebookConfirm(
+                                context: context,
+                                notebookName: title,
+                                onConfirm: () {
+                                  showTopNotification(
+                                    context,
+                                    type: ToastType.success,
+                                    title: 'Đã xóa',
+                                    message: 'Sổ tay "$title" đã được xóa',
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Sửa sổ tay'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete, color: Colors.red, size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Xóa sổ tay',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
 
-                    const SizedBox(height: 4),
-
-                    // NUMBER
+                    const SizedBox(height: 6),
                     Text(
                       '$count',
                       style: const TextStyle(
-                        fontSize: 34,   // giảm từ 42 → 34
+                        fontSize: 34,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Từ vựng',
-                      style: TextStyle(
-                        fontSize: 18,   // giảm nhẹ
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-
-                    // Khoảng trống vừa đủ để không tràn
-                    const SizedBox(height: 8),
-
-                    // DATE
+                    const Text('Từ vựng',
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 6),
                     const Text(
                       'Ngày tạo: 21/12/2025',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
+
 
 
 
@@ -238,6 +269,170 @@ class NotebooksPage extends StatelessWidget {
 
     );
   }
+
+  void _showEditNotebookModal(
+      BuildContext context, {
+        required String oldName,
+      }) {
+    final formKey = GlobalKey<FormState>();
+    String name = oldName;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: bottomInset,
+            left: 16,
+            right: 16,
+            top: 12,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Sửa sổ tay',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  Form(
+                    key: formKey,
+                    child: TextFormField(
+                      initialValue: oldName,
+                      decoration: const InputDecoration(
+                        hintText: 'Nhập tên sổ tay',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (v) => name = v,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Vui lòng nhập tên sổ tay';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (!formKey.currentState!.validate()) return;
+                        Navigator.pop(ctx);
+                        showTopNotification(
+                          context,
+                          type: ToastType.success,
+                          title: 'Thành công',
+                          message: 'Đã cập nhật sổ tay "$name"',
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3A94E7),
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text('Lưu'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+
+  Future<void> showDeleteNotebookConfirm({
+    required BuildContext context,
+    required String notebookName,
+    required VoidCallback onConfirm,
+  }) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  size: 42, color: Colors.red),
+              const SizedBox(height: 12),
+              Text(
+                'Xóa sổ tay "$notebookName"?',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Tất cả từ vựng bên trong sẽ bị xóa và không thể khôi phục.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Hủy'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onConfirm();
+                      },
+                      child: const Text('Xóa'),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
 
   @override
