@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
-import 'package:magic_english_project/app/app_router.dart';
+import 'second_intro.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -16,7 +16,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    // Thêm chút hiệu ứng Fade in nhẹ nhàng cho sang trọng
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -25,7 +24,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
     _controller.forward();
-
     checkLoginStatus();
   }
 
@@ -37,7 +35,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
 
   void checkLoginStatus() async {
     await Future.delayed(const Duration(milliseconds: 2000));
-
     if (FirebaseAuth.instance.currentUser != null) {
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -46,6 +43,7 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -67,10 +65,7 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 2.0,
-                        ),
+                        border: Border.all(color: Colors.black, width: 2.0),
                         boxShadow: [
                           BoxShadow(
                             color: primaryBlue.withOpacity(0.25),
@@ -132,7 +127,11 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, AppRouter.signIn);
+                  // SỬA: Chuyển sang màn hình Onboarding 1
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const OnboardingScreen1()),
+                  );
                 },
                 child: Container(
                   height: 65,

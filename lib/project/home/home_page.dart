@@ -185,7 +185,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
                 _buildAvatarItem(),
-                const SizedBox(width: 10),
                 _buildStatItem(
                   context,
                   currentIcon: calendarIcon,
@@ -193,7 +192,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                   isCalendar: true,
                   tooltipText: calendarTooltip,
                 ),
-                const SizedBox(width: 10),
                 _buildStatItem(
                     context,
                     currentIcon: fireIcon,
