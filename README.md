@@ -148,6 +148,3 @@ users
 ```
 
 ---
-
-**Tổng số bảng mới:** 6  
-**Phục vụ:** FR1 – Magic Vocab, FR2 – Grammar Checker, FR3 – Stats & Streaks
