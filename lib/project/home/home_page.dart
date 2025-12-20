@@ -4,10 +4,11 @@ import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
-
 import 'package:magic_english_project/project/theme/apptheme.dart';
+
+// --- 1. HomePage & Main Wrapper ---
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -18,6 +19,7 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+
 class MainAppWrapper extends StatefulWidget {
   final int selectedIndex;
 
@@ -26,8 +28,9 @@ class MainAppWrapper extends StatefulWidget {
   @override
   State<MainAppWrapper> createState() => _MainAppWrapperState();
 }
+
 class _MainAppWrapperState extends State<MainAppWrapper> {
-   int selectedIndex = 0;
+  int selectedIndex = 0;
   final navigatorStates = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
@@ -35,53 +38,44 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
     GlobalKey<NavigatorState>()
   ];
 
-  List<VoidCallback> _getBottomActions(BuildContext context) {
-    return [
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainAppWrapper(selectedIndex: 0))),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
-        return Scaffold(
-          appBar: null,
-          body: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: IndexedStack(
-                index: selectedIndex,
-
-                children: [
-                  TabNavigate(root: const HomeScreenContent(), navigatorKey: navigatorStates[0]),
-                  TabNavigate(root: const NotebooksPage(), navigatorKey: navigatorStates[1]),
-                  TabNavigate(root: const HistoryPoint(), navigatorKey: navigatorStates[2]),
-                  TabNavigate(root: const ProfileScreen(), navigatorKey: navigatorStates[3]),
-                ],
-                ),
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            selectedItemColor: AppTheme.appTheme.primaryColor,
-              unselectedItemColor: AppTheme.blackColor,
-              unselectedLabelStyle: const TextStyle(
-                color: AppTheme.blackColor
-              ),
-              onTap: (index){
-                setState(() {
-                  selectedIndex = index;
-                });
-              },
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.home_outlined),label: 'Trang chủ'),
-                BottomNavigationBarItem(icon: Icon(Icons.book_outlined),label: 'Thêm từ'),
-                BottomNavigationBarItem(icon: Icon(Icons.edit_outlined),label: 'Viết văn'),
-                BottomNavigationBarItem(icon: Icon(Icons.person_2_outlined),label: 'Cá nhân'),
-              ]),
-          );
-    }
+    return Scaffold(
+      appBar: null,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: IndexedStack(
+          index: selectedIndex,
+          children: [
+            TabNavigate(root: const HomeScreenContent(), navigatorKey: navigatorStates[0]),
+            TabNavigate(root: const NotebooksPage(), navigatorKey: navigatorStates[1]),
+            TabNavigate(root: const HistoryPoint(), navigatorKey: navigatorStates[2]),
+            TabNavigate(root: const ProfileScreen(), navigatorKey: navigatorStates[3]),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          selectedItemColor: AppTheme.appTheme.primaryColor,
+          unselectedItemColor: AppTheme.blackColor,
+          unselectedLabelStyle: const TextStyle(color: AppTheme.blackColor),
+          onTap: (index) {
+            setState(() {
+              selectedIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Trang chủ'),
+            BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Thêm từ'),
+            BottomNavigationBarItem(icon: Icon(Icons.edit_outlined), label: 'Viết văn'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_2_outlined), label: 'Cá nhân'),
+          ]),
+    );
   }
+}
+
+// --- 2. HomeScreenContent (Phần chính đã sửa lỗi) ---
+
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
 
@@ -94,6 +88,30 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   double _selectedBarValue = 0;
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
+
+  // Dữ liệu biểu đồ
+  final Map<String, double> categoryData = const {
+    'Danh từ': 0.11,
+    'Tính từ': 0.24,
+    'Động từ': 0.26,
+    'Còn lại': 0.39,
+  };
+  final List<Color> pieColors = const [
+    Color(0xFF66BB6A),
+    Color(0xFFFFEB3B),
+    Color(0xFFE53935),
+    Color(0xFF9FA8DA),
+  ];
+  final Map<String, double> cefrData = const {
+    'A1': 30,
+    'A2': 18,
+    'B1': 27,
+    'B2': 60,
+    'C1': 42,
+    'C2': 23,
+  };
+
+  // --- Helper Methods cho Header ---
   String _getLevelDescription(int days) {
     if (days >= 1000) return 'Cấp độ: Huyền thoại';
     if (days >= 500) return 'Cấp độ: Siêu bền vững';
@@ -174,7 +192,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     final String fireTooltip = "Chuỗi học liên tục của bạn. ";
     const IconData fireIcon = Icons.local_fire_department;
 
-
     return PreferredSize(
       preferredSize: const Size.fromHeight(80.0),
       child: Container(
@@ -184,47 +201,27 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-                _buildAvatarItem(),
-                _buildStatItem(
-                  context,
-                  currentIcon: calendarIcon,
-                  label: totalStudyDays.toString(),
-                  isCalendar: true,
-                  tooltipText: calendarTooltip,
-                ),
-                _buildStatItem(
-                    context,
-                    currentIcon: fireIcon,
-                    label: currentFireStreak.toString(),
-                    isFire: true,
-                    tooltipText: fireTooltip
-                ),
+            _buildAvatarItem(),
+            _buildStatItem(
+              context,
+              currentIcon: calendarIcon,
+              label: totalStudyDays.toString(),
+              isCalendar: true,
+              tooltipText: calendarTooltip,
+            ),
+            _buildStatItem(
+                context,
+                currentIcon: fireIcon,
+                label: currentFireStreak.toString(),
+                isFire: true,
+                tooltipText: fireTooltip
+            ),
             const Icon(Icons.notifications_none, color: Colors.black, size: 28),
           ],
         ),
       ),
     );
   }
-  final Map<String, double> categoryData = const {
-    'Danh từ': 0.11, // 11%
-    'Tính từ': 0.24, // 24%
-    'Động từ': 0.26, // 26%
-    'Còn lại': 0.39, // 39%
-  };
-  final List<Color> pieColors = const [
-    Color(0xFF66BB6A),
-    Color(0xFFFFEB3B),
-    Color(0xFFE53935),
-    Color(0xFF9FA8DA),
-  ];
-  final Map<String, double> cefrData = const {
-    'A1': 30,
-    'A2': 18,
-    'B1': 27,
-    'B2': 60,
-    'C1': 42,
-    'C2': 23,
-  };
 
   void _showInstructionModal(BuildContext context) {
     showDialog(
@@ -244,96 +241,113 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
 
-      return Scaffold(
-        appBar: buildCustomAppBar(context),
-        body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      appBar: buildCustomAppBar(context),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Tiêu đề Dashboard
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Bảng điều khiển tiến độ',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    GestureDetector(
-                      onTap: () => _showInstructionModal(context),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: infoIconColor, width: 1.5),
-                        ),
-                        child: const Icon(Icons.info_outline, size: 20, color: infoIconColor),
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Bảng điều khiển tiến độ',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildSubHeaderItem(
-                                icon: Icons.folder_open,
-                                text: 'Số từ vựng đã học',
-                              ),
-                              const SizedBox(width: 16),
-                              Container(
-                                width: 70,
-                                height: 70,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: amberColor, width: 3),
-                                  color: Colors.white,
-                                ),
-                                child: const Text(
-                                  '200',
-                                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
-                                ),
-                              ),
-                            ],
-                          ),
-
-
-                          const SizedBox(height: 12),
-                          _buildSubHeaderItem(
-                            icon: Icons.dashboard_customize,
-                            text: 'Phân loại từ vựng',
-                          ),
-                          const SizedBox(height: 20),
-                          _buildSortOptionWithRefresh(
-                            leadingIcon: Icons.pie_chart,
-                            text: 'Phân loại theo từ loại',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildPieChartSection(context, categoryData, pieColors),
-                          const SizedBox(height: 20),
-                          _buildSortOptionWithRefresh(
-                            leadingIcon: Icons.bar_chart,
-                            text: 'Phân loại theo cấp độ CEFR',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildBarChart(context, cefrData),
-                        ],
-                      ),
+                GestureDetector(
+                  onTap: () => _showInstructionModal(context),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: infoIconColor, width: 1.5),
                     ),
-
-                  ],
+                    child: const Icon(Icons.info_outline, size: 20, color: infoIconColor),
+                  ),
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+
+            // Nội dung chính
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section 1: Số từ vựng
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildSubHeaderItem(
+                            icon: Icons.folder_open,
+                            text: 'Số từ vựng đã học',
+                          ),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 70,
+                            height: 70,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: amberColor, width: 3),
+                              color: Colors.white,
+                            ),
+                            child: const Text(
+                              '200',
+                              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      _buildSubHeaderItem(
+                        icon: Icons.dashboard_customize,
+                        text: 'Phân loại từ vựng',
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Section 2: Biểu đồ tròn
+                      // Sửa: Dùng _buildSimpleHeader (đã định nghĩa bên dưới)
+                      _buildSimpleHeader('Phân loại theo từ loại'),
+
+                      const SizedBox(height: 12),
+                      _buildPieChartSection(context, categoryData, pieColors),
+                      const SizedBox(height: 20),
+
+                      // Section 3: Biểu đồ cột
+                      // Sửa: Dùng _buildSimpleHeader
+                      _buildSimpleHeader('Phân loại theo cấp độ CEFR'),
+
+                      const SizedBox(height: 12),
+                      _buildBarChart(context, cefrData),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
+  // --- HÀM MỚI: Chỉ hiển thị Text tiêu đề, KHÔNG icon ---
+  Widget _buildSimpleHeader(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black
+      ),
+    );
+  }
+
+  // --- Các Widget con khác ---
   Widget _buildSubHeaderItem({required IconData icon, required String text, bool isHighlighted = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -508,32 +522,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-
-  Widget _buildSortOptionWithRefresh({
-    required String text,
-    IconData? leadingIcon,
-  }) {
-    return Row(
-      children: [
-        if (leadingIcon != null)
-          Icon(leadingIcon, color: Colors.black, size: 20),
-        if (leadingIcon != null)
-          const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-        ),
-
-        const Icon(Icons.rotate_right, color: Colors.grey),
-      ],
-    );
-  }
 }
-// -----------------------------------------------------------------------------
-// 4. Custom Painter (Giữ nguyên)
-// -----------------------------------------------------------------------------
+
+// --- 3. Painter Class ---
+
 class PieChartPainter extends CustomPainter {
   final Map<String, double> data;
   final List<Color> colors;

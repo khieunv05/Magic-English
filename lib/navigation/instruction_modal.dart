@@ -46,8 +46,6 @@ class InstructionModal extends StatelessWidget {
                   'Bảng điều khiển cung cấp tổng quan về quá trình học từ vựng của bạn thông qua các chỉ số và biểu đồ trực quan.',
                 ),
                 const SizedBox(height: 10),
-
-                // Các mục chi tiết
                 _buildListItem(
                   title: 'Số từ vựng đã học',
                   description: 'Thể hiện tổng số từ vựng bạn đã tiếp thu và lưu trong hệ thống.',
@@ -61,8 +59,8 @@ class InstructionModal extends StatelessWidget {
                   description: 'Phân bổ số lượng từ vựng theo các cấp độ A1–C2, hỗ trợ theo dõi sự tiến bộ và định hướng lộ trình học phù hợp.',
                 ),
                 _buildListItem(
-                  title: 'Tương tác và cập nhật',
-                  description: 'Bạn có thể chuyển đổi chế độ hiển thị, cập nhật cho phép làm mới dữ liệu nhằm đảm bảo báo số liệu phản ánh đúng tiến độ hiện tại bằng biểu tượng bên cạnh tiêu đề.',
+                  title: 'Tương tác',
+                  description: 'Bạn có thể thực hiện các thao chạm vào biểu đồ từ đó cho phép hiển thị dữ liệu tương ứng nhằm đảm bảo báo số liệu phản ánh đúng tiến độ hiện tại.',
                 ),
                 const SizedBox(height: 15),
                 const Text(

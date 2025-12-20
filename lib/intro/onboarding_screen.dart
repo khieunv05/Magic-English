@@ -34,10 +34,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        // Bỏ SingleChildScrollView ở ngoài cùng đi để tránh xung đột với PageView
         child: Column(
           children: [
-            // --- 1. Header (Skip Button) ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Align(
@@ -55,9 +53,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
-
-            // --- 2. Body (Slide Content) ---
-            // Expanded ở đây hoạt động tốt vì nó nằm trực tiếp trong Column của body (có height cố định)
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -68,9 +63,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
                 itemCount: _onboardingData.length,
                 itemBuilder: (context, index) {
-                  // Đặt SingleChildScrollView Ở ĐÂY.
-                  // Nếu màn hình quá ngắn hoặc text quá dài, chỉ phần Text này cuộn,
-                  // còn nút Skip và nút Next vẫn đứng yên -> Trải nghiệm tốt hơn.
                   return Center(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 32.0),
