@@ -9,9 +9,7 @@ class VocabPage extends StatelessWidget {
 
   const VocabPage({super.key, required this.notebookName});
 
-  // ============================================================
-  //                        CARD TỪ VỰNG
-  // ============================================================
+
   Widget _buildVocabCard(
       BuildContext context, {
         required String title,
