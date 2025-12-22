@@ -22,13 +22,10 @@ class HomePage extends StatelessWidget {
 
 class MainAppWrapper extends StatefulWidget {
   final int selectedIndex;
-
   const MainAppWrapper({super.key, required this.selectedIndex});
-
   @override
   State<MainAppWrapper> createState() => _MainAppWrapperState();
 }
-
 class _MainAppWrapperState extends State<MainAppWrapper> {
   int selectedIndex = 0;
   final navigatorStates = [
@@ -73,23 +70,16 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
     );
   }
 }
-
-// --- 2. HomeScreenContent (Phần chính đã sửa lỗi) ---
-
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
-
   @override
   State<HomeScreenContent> createState() => _HomeScreenContentState();
 }
-
 class _HomeScreenContentState extends State<HomeScreenContent> {
   String _selectedBarLabel = '';
   double _selectedBarValue = 0;
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
-
-  // Dữ liệu biểu đồ
   final Map<String, double> categoryData = const {
     'Danh từ': 0.11,
     'Tính từ': 0.24,
@@ -111,17 +101,15 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     'C2': 23,
   };
 
-  // --- Helper Methods cho Header ---
   String _getLevelDescription(int days) {
-    if (days >= 1000) return 'Cấp độ: Huyền thoại';
-    if (days >= 500) return 'Cấp độ: Siêu bền vững';
-    if (days >= 200) return 'Cấp độ: Bền bỉ';
-    if (days >= 100) return 'Cấp độ: Bứt phá';
-    if (days >= 30) return 'Cấp độ: Kiên trì';
-    if (days >= 10) return 'Cấp độ: Khởi động';
-    return 'Chưa đạt cấp độ (Đã đạt ${days} ngày)';
+    if (days >= 1000) return 'Cấp độ: Huyền thoại ${days} ngày';
+    if (days >= 500) return 'Cấp độ: Siêu bền vững ${days} ngày';
+    if (days >= 200) return 'Cấp độ: Bền bỉ ${days} ngày';
+    if (days >= 100) return 'Cấp độ: Bứt phá ${days} ngày';
+    if (days >= 30) return 'Cấp độ: Kiên trì ${days} ngày';
+    if (days >= 10) return 'Cấp độ: Khởi động ${days} ngày';
+    return 'Chưa đạt cấp độ  ${days} ngày';
   }
-
   IconData _getLevelIcon(int days) {
     if (days >= 1000) return Icons.military_tech;
     if (days >= 500) return Icons.diamond;
@@ -268,8 +256,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               ],
             ),
             const SizedBox(height: 20),
-
-            // Nội dung chính
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -309,17 +295,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                         text: 'Phân loại từ vựng',
                       ),
                       const SizedBox(height: 20),
-
-                      // Section 2: Biểu đồ tròn
-                      // Sửa: Dùng _buildSimpleHeader (đã định nghĩa bên dưới)
                       _buildSimpleHeader('Phân loại theo từ loại'),
-
                       const SizedBox(height: 12),
                       _buildPieChartSection(context, categoryData, pieColors),
                       const SizedBox(height: 20),
-
-                      // Section 3: Biểu đồ cột
-                      // Sửa: Dùng _buildSimpleHeader
                       _buildSimpleHeader('Phân loại theo cấp độ CEFR'),
 
                       const SizedBox(height: 12),
@@ -334,8 +313,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-
-  // --- HÀM MỚI: Chỉ hiển thị Text tiêu đề, KHÔNG icon ---
   Widget _buildSimpleHeader(String text) {
     return Text(
       text,
@@ -346,8 +323,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-
-  // --- Các Widget con khác ---
   Widget _buildSubHeaderItem({required IconData icon, required String text, bool isHighlighted = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -375,7 +350,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-
   Widget _buildPieChartSection(BuildContext context, Map<String, double> data, List<Color> colors) {
     final List<String> legendLabels = ['Danh từ', 'Tính từ', 'Động từ', 'Còn lại'];
 
@@ -439,7 +413,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-
   Widget _buildBarChart(BuildContext context, Map<String, double> data) {
     double maxValue = 60;
     const Color defaultColor = Color(0xFFE0E0E0);
@@ -467,11 +440,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         children: data.entries.map((entry) {
           String label = entry.key;
           double value = entry.value;
-
           double normalizedHeight = (value / maxValue) * maxBarPixelHeight;
-
           bool isSelected = _selectedBarLabel == label;
-
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -523,9 +493,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 }
-
-// --- 3. Painter Class ---
-
 class PieChartPainter extends CustomPainter {
   final Map<String, double> data;
   final List<Color> colors;
