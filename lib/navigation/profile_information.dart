@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
+
 class UserData {
   String fullName;
   String email;
@@ -7,6 +8,7 @@ class UserData {
   String phone;
   String gender;
   String imagePath;
+
   UserData({
     required this.fullName,
     required this.email,
@@ -23,6 +25,7 @@ class PersonalInfoScreen extends StatefulWidget {
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
 }
+
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   final List<String> _availableAvatars = [
@@ -68,7 +71,20 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     _tempAssetPath = userData.imagePath;
   }
 
-  // Mở danh sách chọn ảnh
+  Future<void> _selectDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dateOfBirthController.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
+
   void _showAvatarPicker() {
     showModalBottomSheet(
       context: context,
@@ -114,6 +130,21 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         );
       },
     );
+  }
+
+  void _saveData() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        userData.fullName = _fullNameController.text;
+        userData.email = _emailController.text;
+        userData.dateOfBirth = _dateOfBirthController.text;
+        userData.phone = _phoneController.text;
+        userData.gender = _selectedGender!;
+        userData.imagePath = _tempAssetPath!;
+        isEditing = false;
+      });
+      showTopNotification(context, type: ToastType.success, title: 'Thành công', message: 'Đã cập nhật thông tin.');
+    }
   }
 
   @override
@@ -175,9 +206,40 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             ],
           ),
           const SizedBox(height: 30),
-          _inputField(_fullNameController, 'Họ tên', Icons.person),
-          _inputField(_emailController, 'Email', Icons.email),
-          _inputField(_phoneController, 'Điện thoại', Icons.phone),
+          _inputField(_fullNameController, 'Họ tên'),
+          _inputField(_emailController, 'Email', keyboardType: TextInputType.emailAddress),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: TextFormField(
+              controller: _dateOfBirthController,
+              readOnly: true,
+              onTap: _selectDate,
+              decoration: _inputDecoration('Ngày sinh'),
+            ),
+          ),
+
+          _inputField(_phoneController, 'Điện thoại', keyboardType: TextInputType.phone),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: DropdownButtonFormField<String>(
+              value: _selectedGender,
+              decoration: _inputDecoration('Giới tính'),
+              items: ['Nam', 'Nữ', 'Khác'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedGender = newValue;
+                });
+              },
+            ),
+          ),
+
           const SizedBox(height: 40),
           _buildBtn('Lưu thay đổi', _saveData),
         ],
@@ -185,13 +247,25 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  void _saveData() {
-    setState(() {
-      userData.fullName = _fullNameController.text;
-      userData.imagePath = _tempAssetPath!;
-      isEditing = false;
-    });
-    showTopNotification(context, type: ToastType.success, title: 'Thành công', message: 'Đã cập nhật thông tin.');
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.grey[100],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+    );
+  }
+
+  Widget _inputField(TextEditingController ctrl, String label, {TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: ctrl,
+        keyboardType: keyboardType,
+        decoration: _inputDecoration(label),
+      ),
+    );
   }
 
   Widget _infoRow(String label, String value) {
@@ -201,22 +275,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 16)),
         Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ]),
-    );
-  }
-
-  Widget _inputField(TextEditingController ctrl, String label, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        controller: ctrl,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: Colors.blue),
-          filled: true,
-          fillColor: Colors.grey[100],
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        ),
-      ),
     );
   }
 
