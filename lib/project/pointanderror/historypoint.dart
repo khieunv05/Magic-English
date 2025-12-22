@@ -47,7 +47,7 @@ class HistoryPointState extends State<HistoryPoint> {
 
     return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
-      centerTitle: true,
+      centerTitle: false,
     ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
       , builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
         if(snapshot.hasError){
@@ -117,15 +117,17 @@ class HistoryPointState extends State<HistoryPoint> {
                     ));
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: IntrinsicHeight(
                       child: Row(
                         children: [
                           CircleAvatar(
                             backgroundColor: getCardBackgroundColor(item.point),
-                            radius: 24,
+                            radius: 20,
                             child: Text(item.point.toString(),
-                              style: Theme.of(context).textTheme.bodyMedium,),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.white
+                              ),),
                           ),
                           const VerticalDivider(
                             color: AppTheme.blackColor,
@@ -140,19 +142,26 @@ class HistoryPointState extends State<HistoryPoint> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(item.content,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16
+                                  ),
                                   maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
-
+                                Text('Bấm vào để xem chi tiết',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w300,
+                                  color: AppTheme.primaryColor
+                                ),)
                               ],
                             ),
                           ),
 
                           IconButton(onPressed: (){
                             (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
-                          }, icon: const Icon(Icons.remove_circle_outline))
+                          }, icon: const Icon(Icons.remove_circle_outline,color: Colors.red,))
                         ],
                       ),
                     ),

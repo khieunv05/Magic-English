@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/navigation/profile_information.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
+import 'package:magic_english_project/navigation/show_logout_dialog.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   List<VoidCallback> _getBottomActions(BuildContext context) {
     return [
           () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
@@ -19,16 +18,21 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color magicEnglishPurple = Color(0xFF4A148C);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thông tin cá nhân'),
+        title: const Text(
+          'Thông tin cá nhân',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa cho các item
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -38,23 +42,22 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(
                     height: MediaQuery.of(context).size.height / 4,
                     width: double.infinity,
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 35,
                           backgroundImage: AssetImage(
                             'assets/images/logo_login.png',
                           ),
                           backgroundColor: Colors.transparent,
                         ),
-                        SizedBox(width: 15),
+                        const SizedBox(width: 15),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+                          children: const [
                             Text(
                               'MAGIC ENGLISH',
                               style: TextStyle(
@@ -82,7 +85,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            // Nút "Thông tin cá nhân" đã được sửa lỗi cú pháp và thêm điều hướng
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50.0),
               child: SizedBox(
@@ -90,10 +92,8 @@ class ProfileScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // *** HÀM ĐƯỢC GỌI để chuyển đến PersonalInfoScreen (ProfileInformation) ***
                     Navigator.push(
                       context,
-                      // Sử dụng ProfileInformation (được import)
                       MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
                     );
                   },
@@ -117,7 +117,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Nút "Đăng xuất"
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50.0),
               child: SizedBox(
@@ -125,9 +124,7 @@ class ProfileScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Xử lý Đăng xuất')),
-                    );
+                    LogoutDialog.show(context);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,

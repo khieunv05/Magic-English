@@ -10,7 +10,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: AppTheme.appTheme,
       onGenerateRoute: AppRouter.onGenerateRoute,
-      initialRoute: AppRouter.intro,
+      initialRoute: AppRouter.initialRoute,
     );
   }
 }

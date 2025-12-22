@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
-
-// Đảm bảo bạn import đúng file onboarding gộp mà ta vừa tạo
 import 'onboarding_screen.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -18,7 +16,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    // Hiệu ứng Fade in
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -29,16 +26,13 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
     _controller.forward();
     checkLoginStatus();
   }
-
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
   void checkLoginStatus() async {
     await Future.delayed(const Duration(milliseconds: 2000));
-    // Nếu đã login thì vào thẳng Home, nếu chưa thì ở lại đợi bấm nút
     if (FirebaseAuth.instance.currentUser != null) {
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -47,7 +41,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -58,7 +51,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. Logo và Text ở chính giữa
           SafeArea(
             child: Center(
               child: FadeTransition(
@@ -91,8 +83,6 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
                       ),
                     ),
                     const SizedBox(height: 40),
-
-                    // Text Magic English
                     Column(
                       children: [
                         const Text(
@@ -130,13 +120,11 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
             ),
           ),
 
-          // 2. Nút mũi tên chuyển hướng (Được căn chỉnh lại cho chuẩn)
           Positioned(
             bottom: 50,
-            right: 30, // Cách lề phải 30px -> Luôn đẹp trên mọi màn hình
+            right: 30,
             child: GestureDetector(
               onTap: () {
-                // CHUYỂN HƯỚNG: Sang màn hình Onboarding (gộp)
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const OnboardingScreen()),
