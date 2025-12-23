@@ -13,10 +13,10 @@ chmod -R ug+rwX storage bootstrap/cache || true
 if [ -f "composer.json" ]; then
   if [ ! -d "vendor" ]; then
     echo "[entrypoint] vendor/ not found → composer install..."
-    composer install --no-interaction --prefer-dist --no-progress -o
+    COMPOSER_PROCESS_TIMEOUT=2000 composer install --no-interaction --prefer-dist --no-progress
   else
     echo "[entrypoint] vendor/ exists → dump autoload..."
-    composer dump-autoload -o
+    composer dump-autoload -o 2>&1 | grep -v "Could not scan" || true
   fi
 else
   echo "[entrypoint] composer.json không tồn tại → bỏ qua composer"
