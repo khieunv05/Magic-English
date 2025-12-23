@@ -13,6 +13,7 @@ use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\Ai\WritingScoreController;
 use App\Http\Controllers\GrammarCheckController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\VocabularyReviewController;
 
 // Phòng trọ
 Route::prefix('room')->group(function () {
@@ -97,4 +98,12 @@ Route::middleware(['auth:sanctum'])->prefix('tracking')->group(function () {
     Route::get('overview', [TrackingController::class, 'overview']);
     // FR3.4: Visualization
     Route::get('visualization', [TrackingController::class, 'visualization']);
+});
+
+// Vocabulary Reviews (protected)
+Route::middleware(['auth:sanctum'])->prefix('reviews')->group(function () {
+    Route::get('due', [VocabularyReviewController::class, 'due']);
+    Route::get('summary', [VocabularyReviewController::class, 'summary']);
+    Route::post('{vocabulary}/answer', [VocabularyReviewController::class, 'answer']);
+    Route::post('{vocabulary}/remember', [VocabularyReviewController::class, 'remember']);
 });

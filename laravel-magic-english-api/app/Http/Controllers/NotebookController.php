@@ -21,11 +21,8 @@ class NotebookController extends Controller
     // Auth is enforced by middleware; safely read current user id if needed
     $userId = Auth::id();
 
-    $query = Notebook::query()->with(['user']);
-
-    if ($request->filled('user_id')) {
-      $query->where('user_id', $request->integer('user_id'));
-    }
+    // Always scope to the authenticated user's notebooks
+    $query = Notebook::query()->with(['user'])->where('user_id', $userId);
 
     // Filter by name (exact param) or generic query 'q'
     if ($request->filled('name')) {
@@ -80,6 +77,9 @@ class NotebookController extends Controller
   // Show notebook
   public function show(Notebook $notebook)
   {
+    if ($notebook->user_id !== Auth::id()) {
+      return $this->apiResponse(false, 'Forbidden', []);
+    }
     $notebook->load(['user']);
     return $this->apiResponse(true, 'Lấy thông tin sổ tay thành công', new NotebookResource($notebook));
   }
@@ -87,6 +87,9 @@ class NotebookController extends Controller
   // Update notebook
   public function update(UpdateNotebookRequest $request, Notebook $notebook)
   {
+    if ($notebook->user_id !== Auth::id()) {
+      return $this->apiResponse(false, 'Forbidden', []);
+    }
     $data = $request->validated();
     $notebook->update($data);
     $notebook->load(['user']);
@@ -97,6 +100,9 @@ class NotebookController extends Controller
   // Delete notebook
   public function destroy(Notebook $notebook)
   {
+    if ($notebook->user_id !== Auth::id()) {
+      return $this->apiResponse(false, 'Forbidden', []);
+    }
     $notebook->delete();
     return $this->apiResponse(true, 'Xóa sổ tay thành công');
   }
