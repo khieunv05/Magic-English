@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Resources\AddressImage;
+namespace App\Http\Resources\Notebook;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
-use App\Http\Resources\Buildings\BuildingsCollection;
+use App\Http\Resources\User\UserResource;
 
-class AddressImageCollection extends JsonResource
+class NotebookCollection extends JsonResource
 {
     /**
      * Transform the resource collection into an array.
@@ -18,12 +18,10 @@ class AddressImageCollection extends JsonResource
     {
         return [
             'id' => $this->id,
-            'province' => $this->province,
-            'district' => $this->district,
-            'image' => $this->image,
-
-            'buildings' => BuildingsCollection::collection($this->whenLoaded('buildings')),
-            'building_count' => $this->whenLoaded('buildings', fn() => $this->buildings->count()),
+            'name' => $this->name,
+            'description' => $this->description,
+            'is_favorite' => (bool) $this->is_favorite,
+            'user' => new UserResource($this->whenLoaded('user')),
 
             'created_at' => Carbon::parse($this->created_at)->format('d-m-Y H:i:s'),
             'updated_at' => Carbon::parse($this->updated_at)->format('d-m-Y H:i:s'),

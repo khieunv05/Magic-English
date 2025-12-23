@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
         User::insert([
             [
                 'name' => 'Hoàng Lân',
+                'date_of_birth' => '1990-01-01',
                 'email' => 'hoanglan@gmail.com',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
@@ -35,6 +36,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Văn Khiếu',
+                'date_of_birth' => '1992-02-02',
                 'email' => 'vankhieu@gmail.com',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
@@ -52,6 +54,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Văn Séc',
+                'date_of_birth' => '1995-03-03',
                 'email' => 'vansec@gmail.com',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),

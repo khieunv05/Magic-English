@@ -1,29 +1,28 @@
 <?php
 
-namespace App\Http\Resources\Booking;
+namespace App\Http\Resources\Notebook;
 
-use App\Http\Resources\Room\RoomResource;
-use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
-class BookingResource extends JsonResource
+use App\Http\Resources\User\UserResource;
+
+class NotebookResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @return array<int|string, mixed>
+     * @return array<string, mixed>
      */
     public function toArray($request): array
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'description' => $this->description,
-            'time' => $this->time,
-            
+            'is_favorite' => (bool) $this->is_favorite,
             'user' => new UserResource($this->whenLoaded('user')),
-            'room' => new RoomResource($this->whenLoaded('room')),
-                        
+
             'created_at' => Carbon::parse($this->created_at)->format('d-m-Y H:i:s'),
             'updated_at' => Carbon::parse($this->updated_at)->format('d-m-Y H:i:s'),
         ];
