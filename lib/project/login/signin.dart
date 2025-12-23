@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/base/baseloginscreen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/project/dto/user.dart';
+import 'package:magic_english_project/project/provider/userprovider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import '../theme/apptheme.dart';
@@ -139,17 +141,9 @@ class _SignInState extends State<SignIn> {
 
     try {
       Database db = Database();
-      Map<String,String?> rs = await db.login(_username,_password);
-
+      User user = await db.login(_username,_password);
       if (!mounted) return;
-      if(rs['id'] == null){
-        setState(() {
-          errorMessage = rs['message']??"Đăng nhập thất bại";
-        });
-        return;
-      }
-      final sharedPre = await SharedPreferences.getInstance();
-      sharedPre.setString('userId', rs['id']??"");
+      context.read<UserProvider>().setUser(user);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
@@ -158,7 +152,7 @@ class _SignInState extends State<SignIn> {
     }catch (e) {
 
       setState(() {
-        errorMessage = 'Lỗi không xác định';
+        errorMessage = e.toString().replaceAll('Exception:', "");
       });
     }
   }

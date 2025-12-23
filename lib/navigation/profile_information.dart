@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/provider/userprovider.dart';
+import 'package:provider/provider.dart';
+
+import '../project/dto/user.dart';
 class UserData {
   String fullName;
   String email;
@@ -24,14 +28,6 @@ class PersonalInfoScreen extends StatefulWidget {
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _formKey = GlobalKey<FormState>();
-  UserData userData = UserData(
-    fullName: 'Nguyễn Văn A',
-    email: 'abc@gmail.com',
-    dateOfBirth: '10/11/2004',
-    phone: '0987654321',
-    gender: 'Nam',
-  );
-  bool isEditing = false;
   late TextEditingController _fullNameController;
   late TextEditingController _emailController;
   late TextEditingController _dateOfBirthController;
@@ -43,11 +39,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    _fullNameController = TextEditingController(text: userData.fullName);
-    _emailController = TextEditingController(text: userData.email);
-    _dateOfBirthController = TextEditingController(text: userData.dateOfBirth);
-    _phoneController = TextEditingController(text: userData.phone);
-    _selectedGender = userData.gender;
+    User? userData = context.read<UserProvider>().user;
+    _fullNameController = TextEditingController(text: userData?.name??"");
+    _emailController = TextEditingController(text: userData?.email??"");
+    _dateOfBirthController = TextEditingController(text: userData?.dateOfBirth??"");
+    _phoneController = TextEditingController(text: userData?.phone??"");
+    _selectedGender = userData?.gender??"";
   }
 
   @override
@@ -59,14 +56,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     super.dispose();
   }
   void _startEditing() {
-    setState(() {
-      isEditing = true;
-    });
+    context.read<UserProvider>().startEditing();
   }
-  Future<void> _selectDateOfBirth(BuildContext context) async {
+  Future<void> _selectDateOfBirth(BuildContext context,User userData) async {
     DateTime initialDate;
     try {
-      List<String> parts = userData.dateOfBirth.split('/');
+      List<String> parts = userData.dateOfBirth?.split('/')??[];
       if (parts.length == 3) {
         initialDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
       } else {
@@ -108,14 +103,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        userData.fullName = _fullNameController.text;
-        userData.email = _emailController.text;
-        userData.dateOfBirth = _dateOfBirthController.text;
-        userData.phone = _phoneController.text;
-        userData.gender = _selectedGender ?? userData.gender;
-
-        isEditing = false;
+      User user = User(
+        name: _fullNameController.text,
+        email: _emailController.text,
+        dateOfBirth: _dateOfBirthController.text,
+        phone: _phoneController.text,
+        gender: _selectedGender ?? "Nam"
+      );
         showTopNotification(
           context,
           type: ToastType.success,
@@ -123,7 +117,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           message: 'Thông tin cá nhân đã được lưu thành công.',
           duration: const Duration(seconds: 3),
         );
-      });
+        context.read<UserProvider>().setUser(user);
+      context.read<UserProvider>().stopEditing();
     } else {
       showTopNotification(
         context,
@@ -135,20 +130,25 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     }
   }
 
-  void _cancelEditing() {
+  void _cancelEditing(User userData) {
     setState(() {
-      _fullNameController.text = userData.fullName;
-      _emailController.text = userData.email;
-      _dateOfBirthController.text = userData.dateOfBirth;
-      _phoneController.text = userData.phone;
+      _fullNameController.text = userData.name??"";
+      _emailController.text = userData.email??"";
+      _dateOfBirthController.text = userData.dateOfBirth??"";
+      _phoneController.text = userData.phone??"";
       _selectedGender = userData.gender;
-
-      isEditing = false;
     });
+    context.read<UserProvider>().stopEditing();
   }
 
   @override
   Widget build(BuildContext context) {
+    User? user = context.watch<UserProvider>().user;
+    bool isEditing = context.watch<UserProvider>().isEditing;
+    if(user == null){
+      return const CircularProgressIndicator();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing
@@ -159,17 +159,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (isEditing) {
-              _cancelEditing();
+              _cancelEditing(user);
             } else {
               Navigator.pop(context);
             }
           },
         ),
       ),
-      body: isEditing ? _buildEditProfileView() : _buildDisplayProfileView(),
+      body: isEditing ? _buildEditProfileView(user) : _buildDisplayProfileView(user),
     );
   }
-  Widget _buildDisplayProfileView() {
+  Widget _buildDisplayProfileView(User userData) {
     const TextStyle labelStyle = TextStyle(
       fontSize: 16,
       color: Colors.grey,
@@ -204,15 +204,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             ),
             margin: const EdgeInsets.only(bottom: 50),
           ),
-          buildInfoRow('Họ tên', userData.fullName),
+          buildInfoRow('Họ tên', userData.name??""),
           const Divider(height: 1),
-          buildInfoRow('Email', userData.email),
+          buildInfoRow('Email', userData.email??""),
           const Divider(height: 1),
-          buildInfoRow('Ngày sinh', userData.dateOfBirth),
+          buildInfoRow('Ngày sinh', userData.dateOfBirth??""),
           const Divider(height: 1),
-          buildInfoRow('Điện thoại', userData.phone),
+          buildInfoRow('Điện thoại', userData.phone??""),
           const Divider(height: 1),
-          buildInfoRow('Giới tính', userData.gender),
+          buildInfoRow('Giới tính', userData.gender??""),
           const Divider(height: 1),
           const Spacer(),
           SizedBox(
@@ -234,7 +234,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       ),
     );
   }
-  Widget _buildEditProfileView() {
+  Widget _buildEditProfileView(User userData) {
     Widget buildEditableField({
       required TextEditingController controller,
       required String hintText,
@@ -366,7 +366,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               controller: _dateOfBirthController,
               hintText: 'Ngày sinh (DD/MM/YYYY)',
               keyboardType: TextInputType.text,
-              onTap: () => _selectDateOfBirth(context),
+              onTap: () => _selectDateOfBirth(context,userData),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Vui lòng chọn Ngày sinh.';
@@ -394,7 +394,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: _saveChanges,
+                onPressed: (){
+                  _saveChanges();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,
@@ -411,4 +413,3 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 }
-

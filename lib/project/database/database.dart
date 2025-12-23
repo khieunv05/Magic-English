@@ -1,31 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:magic_english_project/api_service/apiservice.dart';
+import 'package:magic_english_project/app/app.dart';
 import 'package:magic_english_project/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:magic_english_project/login.dart';
+import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 class Database{
-  final String _baseUrl = 'https://magic-english-api-production.up.railway.app';
-  static Future<void> addToParagraph(WritingDto writingDto)async{
-    final user = FirebaseAuth.instance.currentUser;
-    if(user == null) return;
-    CollectionReference path = FirebaseFirestore.instance.collection('users')
-        .doc(user.uid).collection('writing_history');
-    await path.add(writingDto.toMap());
-  }
-  // static Future<void> deleteParagraph(String paragraphId) async{
-  //   final user = FirebaseAuth.instance.currentUser;
-  //   if(user == null) return;
-  //   CollectionReference path = FirebaseFirestore.instance.collection('users')
-  //     .doc(user.uid).collection('writing_history');
-  //   path.doc(paragraphId).delete();
-  //
-  // }
+  final String _baseUrl = 'http://localhost:8000';
   Future<String?> addUser(String username,String password)async {
     try {
       final response = await http.post(
@@ -68,69 +56,55 @@ class Database{
     }
   }
 
-  Future<Map<String,String?>> login(String username,String password)async{
-    Map<String, String?> result = {};
-    try{
+  Future<User> login(String username,String password)async{
       final response = await http.post(
         Uri.parse('$_baseUrl/api/login'),
         headers: {
           "Content-Type":"application/json"
         },
         body: jsonEncode({
-          "username":username,
+          "email":username,
           "password":password
         })
       ).timeout(const Duration(seconds: 10));
-      try {
-
-        final body = jsonDecode(response.body);
-        if (response.statusCode == 200) {
-          result['id'] = body['data']["_id"];
-          result['message'] = body['message'];
-          return result;
-        }
-        else {
-          result['id'] = null;
-          result['message'] = body['error'];
-          return result;
-        }
+    final body = jsonDecode(response.body);
+    if(response.statusCode == 200){
+      if(body['result'].isEmpty){
+        throw Exception(body['message']);
       }
-      catch(error){
-        result['id'] = null;
-        result['message'] = "Lỗi máy chủ";
-        return result;
-      }
-
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('accessToken', body['result']['token']);
+      User user = User.fromJson(body['result']);
+      return user;
     }
-    catch(err){
-      if(err is SocketException){
-        result['id'] = null;
-        result['message'] = "Không có kết nối mạng";
-        return result;
-      }
-      else if(err is TimeoutException){
-        result['id'] = null;
-        result['message'] = "Kết nối bị quá thời gian,vui lòng thử lại";
-        return result;
-      }
-      else{
-        result['id'] = null;
-        result['message'] = "Lỗi không xác định";
-        return result;
-      }
+    else{
+      throw Exception(body['message']);
     }
+
+
+
   }
+  Future<User> getUserData()async{
+    Uri uri = Uri.parse('$_baseUrl/api/show');
+    final response = await ApiService.get(uri);
+    if(response.statusCode == 200){
+      final body = jsonDecode(response.body);
+      User user = User.fromJson(body['result']);
+      return user;
+    }
+    else{
+      throw Exception('Lỗi lấy thông tin');
+    }
 
+  }
   Future<List<WritingDto>> getAllParagraph(String userId)async{
     List<WritingDto> listParagraph = [];
-    try {
       final response = await http.get(
           Uri.parse('$_baseUrl/api/paragraphs/$userId'),
           headers: {
             "Content-Type":"application/json"
           }
       ).timeout(const Duration(seconds: 10));
-      try {
         if (response.statusCode == 200) {
           final body = jsonDecode(response.body);
           List<dynamic> listData = body['data'];
@@ -140,15 +114,9 @@ class Database{
           return listParagraph;
         }
         return listParagraph;
-      }
-      catch(err){
-        return listParagraph;
-      }
 
-    }
-    catch(err){
-      return listParagraph;
-    }
+    
+    
   }
 
   Future<void> addParagraph(String userId,WritingDto writingDto) async{
