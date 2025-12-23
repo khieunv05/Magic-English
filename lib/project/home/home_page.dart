@@ -118,7 +118,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
   String _getLevelDescription(int days) {
-    if (days >= 1000) return 'Cấp độ: Huyền thoại';
+    if (days >= 1000) return 'Cấp độ: Huyền thoại ';
     if (days >= 500) return 'Cấp độ: Siêu bền vững';
     if (days >= 200) return 'Cấp độ: Bền bỉ';
     if (days >= 100) return 'Cấp độ: Bứt phá';
@@ -547,25 +547,22 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black
+            ),
           ),
         ),
-
-        const Icon(Icons.rotate_right, color: Colors.grey),
       ],
     );
+    }
   }
-}
-// -----------------------------------------------------------------------------
-// 4. Custom Painter (Giữ nguyên)
-// -----------------------------------------------------------------------------
 class PieChartPainter extends CustomPainter {
   final Map<String, double> data;
   final List<Color> colors;
   final double ringThickness;
-
   PieChartPainter(this.data, this.colors, {this.ringThickness = 30.0});
-
   @override
   void paint(Canvas canvas, Size size) {
     double total = data.values.fold(0, (sum, value) => sum + value);

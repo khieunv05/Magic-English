@@ -6,8 +6,9 @@ class User {
   String? dateOfBirth;
   String? phone;
   String? gender;
+  String? imagePath;
 
-  User({this.name, this.email,this.dateOfBirth, this.phone, this.gender = 'Nam'});
+  User({this.name, this.email,this.dateOfBirth, this.phone, this.gender = 'Nam',this.imagePath});
 
   factory User.fromJson(Map<String,dynamic> json){
     return User(
