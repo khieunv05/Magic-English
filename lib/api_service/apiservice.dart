@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/app/app.dart';
-import 'package:magic_english_project/login.dart';
+import 'package:magic_english_project/project/login/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   static Future<Map<String,String>> _getHeader() async{
@@ -11,7 +11,7 @@ class ApiService {
       'Content-Type': 'application/json',
     };
     if(token != null && token.isNotEmpty){
-      header['Authorization'] = 'Bearer $token';
+      header['Authorization'] = 'Bearer $token 222';
     }
     return header;
   }
@@ -21,7 +21,7 @@ class ApiService {
       await prefs.clear();
       navigatorKey.currentState!.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context){
-          return const Login();
+          return const SignIn();
         }),
           (route)=>false
       );
