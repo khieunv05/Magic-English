@@ -42,22 +42,22 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(
                     height: MediaQuery.of(context).size.height / 4,
                     width: double.infinity,
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 35,
                           backgroundImage: AssetImage(
                             'assets/images/logo_login.png',
                           ),
                           backgroundColor: Colors.transparent,
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: const [
+                          children: [
                             Text(
                               'MAGIC ENGLISH',
                               style: TextStyle(

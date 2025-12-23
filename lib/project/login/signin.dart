@@ -143,7 +143,7 @@ class _SignInState extends State<SignIn> {
       Database db = Database();
       User user = await db.login(_username,_password);
       if (!mounted) return;
-      context.read<UserProvider>().setUser(user);
+      //context.read<UserProvider>().setUser(user);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),

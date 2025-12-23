@@ -32,6 +32,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<UserProvider>().getUserData();
     User? user = context.read<UserProvider>().user;
     _initFields(user);
   }
@@ -137,10 +138,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (isEditing) {
-              setState(() {
-                _initFields(user);
-                isEditing = false;
-              });
+              _initFields(user);
+              context.read<UserProvider>().stopEditing();
             } else {
               Navigator.pop(context);
             }
@@ -166,7 +165,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         _infoRow('Điện thoại', userData.phone??""),
         _infoRow('Giới tính', userData.gender??""),
         const SizedBox(height: 50),
-        _buildBtn('Chỉnh sửa', () => context.read<UserProvider>().startEditing()),
+        _buildBtn('Chỉnh sửa', (){
+          _initFields(userData);
+          context.read<UserProvider>().startEditing();
+        }),
       ],
     );
   }
