@@ -62,7 +62,7 @@ class VocabularyController extends Controller
   public function store(Notebook $notebook, StoreVocabularyRequest $request): JsonResponse
   {
     if ($notebook->user_id !== Auth::id()) {
-      return $this->apiResponse(false, 'Forbidden', []);
+      return $this->apiResponse(false, 'Không phải sổ tay của bạn', []);
     }
 
     $data = $request->validated();
