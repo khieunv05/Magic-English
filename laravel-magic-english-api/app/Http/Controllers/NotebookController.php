@@ -27,7 +27,6 @@ class NotebookController extends Controller
       $query->where('user_id', $request->integer('user_id'));
     }
 
-    // Filter by name (exact param) or generic query 'q'
     if ($request->filled('name')) {
       $name = $request->string('name');
       $query->where('name', 'like', "%{$name}%");
