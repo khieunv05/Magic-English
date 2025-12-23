@@ -12,8 +12,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function ($request) {
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated',
+            ], 401);
+        });
+
+        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, \Illuminate\Http\Request $request) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        });
     })->create();
