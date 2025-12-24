@@ -33,7 +33,9 @@ class _WritingParagraphState extends State<WritingParagraph> {
       title: const Text('Viết đoạn văn',),
       centerTitle: false,
     ), body: SingleChildScrollView(
+
       padding: const EdgeInsets.only(bottom: AppTheme.singleChildScrollViewHeight),
+
       child: Column(
         children: [
           TextField(
@@ -47,7 +49,9 @@ class _WritingParagraphState extends State<WritingParagraph> {
             minLines: 15,
             maxLines: null,
           ),
+
           const SizedBox(height: 36,),
+
           SizedBox(
             width: double.infinity,
             child: TextButton(onPressed:(isLoading == true)? null:  () async {

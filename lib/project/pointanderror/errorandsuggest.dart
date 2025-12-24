@@ -53,7 +53,7 @@ class ErrorAndSuggest extends StatelessWidget {
   Widget buildErrorListCard({
     required Color avatarColor,
     required IconData icon,
-    required List<String> mistakes,
+    required List<String> errors,
     required BuildContext context,
   }) {
     return Container(
@@ -94,7 +94,7 @@ class ErrorAndSuggest extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          if (mistakes.isEmpty)
+          if (errors.isEmpty)
             Text(
               "Không có lỗi nào 🎉",
               style: TextStyle(fontSize: 15, color: Colors.grey[700]),
@@ -102,7 +102,7 @@ class ErrorAndSuggest extends StatelessWidget {
           else
             Column(
               children: List.generate(
-                mistakes.length,
+                errors.length,
                     (index) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -112,7 +112,87 @@ class ErrorAndSuggest extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          mistakes[index],
+                          errors[index],
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 15,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+        ],
+      ),
+    );
+  }
+
+
+  Widget buildSuggestionListCard({
+    required Color avatarColor,
+    required IconData icon,
+    required List<String> suggestions,
+    required BuildContext context,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.07),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header icon
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: avatarColor,
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                "Các gợi ý",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          if (suggestions.isEmpty)
+            Text(
+              "Không có gợi ý nào 🎉",
+              style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+            )
+          else
+            Column(
+              children: List.generate(
+                suggestions.length,
+                    (index) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.check, size: 8, color: Colors.green),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          suggestions[index],
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontSize: 15,
                             height: 1.45,
@@ -181,16 +261,16 @@ class ErrorAndSuggest extends StatelessWidget {
             buildErrorListCard(
               avatarColor: Colors.redAccent,
               icon: Icons.close_rounded,
-              mistakes: writingDto.errors??[],
+              errors: writingDto.errors??[],
               context: context,
             ),
 
             const SizedBox(height: 28),
 
-            buildInfoCard(
+            buildSuggestionListCard(
               avatarColor: Colors.green,
               icon: Icons.lightbulb_outline,
-              text: "Gợi ý cải thiện: ${writingDto.suggestions}",
+              suggestions: writingDto.suggestions??[],
               context: context,
             ),
 
