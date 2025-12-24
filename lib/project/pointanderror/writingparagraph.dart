@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/project/AI/sendtoAI.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
-import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 class WritingParagraph extends StatefulWidget {
   const WritingParagraph({super.key});
 
@@ -18,7 +14,7 @@ class WritingParagraph extends StatefulWidget {
 
 class _WritingParagraphState extends State<WritingParagraph> {
   final TextEditingController _controller = TextEditingController();
-  bool isLoading = false;
+  //bool isLoading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -54,7 +50,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
 
           SizedBox(
             width: double.infinity,
-            child: TextButton(onPressed:(isLoading == true)? null:  () async {
+            child: TextButton(onPressed:() async {
               if(_controller.text.trim().isEmpty){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
@@ -71,32 +67,55 @@ class _WritingParagraphState extends State<WritingParagraph> {
 
 
               else{
-                setState(() {
-                  isLoading = true;
-                });
-                WritingDto? writingDto = await context.read<ParagraphProvider>().addData(_controller.text);
-                if(writingDto == null){
-                  setState(() {
-                    isLoading = false;
-                  });
-                  return;
+                  showLoading(context);
+
+                  try {
+                    WritingDto? writingDto = await context.read<
+                        ParagraphProvider>().addData(_controller.text);
+                    if(!context.mounted){
+                      return;
+                    }
+                    Navigator.of(context,rootNavigator: true).pop();
+                    if (writingDto == null) {
+                      showTopNotification(
+                          context,
+                          type: ToastType.error,
+                          title: 'Lỗi',
+                          message: 'Không nhận được dữ liệu phản hồi.'
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) =>
+                        ErrorAndSuggest(
+                            writingDto: writingDto),
+                    ));
+                  }
+                  catch(err){
+                    if (!context.mounted) return;
+                    Navigator.of(context,rootNavigator: true).pop();
+
+                    showTopNotification(context, type: ToastType.error, title: 'Lỗi'
+                        , message: err.toString().replaceAll('Exception:', ''));
+                  }
                 }
-                if(!context.mounted) return;
-                setState(() {
-                  isLoading = false;
-                });
-                 Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
-                  writingDto: writingDto),
-                ));
-              }
 
 
-            }, child:(isLoading == true)?const CircularProgressIndicator() :Text('Chấm điểm',
+            }, child:Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),
           )
         ],
       ),
     ));
   }
-
+  void showLoading(BuildContext context){
+    showDialog(context: context,
+        barrierDismissible: false
+        , builder: (dialogContext){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    });
+  }
 }

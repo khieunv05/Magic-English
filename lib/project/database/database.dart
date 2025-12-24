@@ -132,30 +132,18 @@ class Database{
       }
   }
 
-  Future<String?> deleteParagraph(String id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$_baseUrl/api/paragraph/$id'),
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-      ).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        return null;
-      }
-      else {
-        return 'Lỗi server';
-      }
+  Future<String> deleteParagraph(int? id,int index) async {
+    if(id == null){
+      throw Exception('Gặp lỗi với id null');
     }
-    catch (err){
-      if(err is SocketException){
-        return 'Lỗi mạng';
-      }
-      if(err is TimeoutException){
-        return 'Bị quá thời gian,vui lòng thực hiện lại';
-      }
-      return 'Lỗi server';
+    Uri uri = Uri.parse('$_baseUrl/api/grammar-checks/$id');
+    final response =await ApiService.delete(uri);
+    if(response.statusCode == 200){
+      final body = jsonDecode(response.body);
+      return body['message'];
+    }
+    else{
+      throw Exception('Gặp lỗi khi xóa ');
     }
   }
 }

@@ -26,6 +26,17 @@ class ParagraphProvider extends ChangeNotifier{
     writingHistory!.insert(0,writingDto);
     notifyListeners();
     return writingDto;
-    
+  }
+  Future<String> deleteData(int? id,int index) async{
+    if(writingHistory == null){
+      return 'Chưa có data lịch sử viết';
+    }
+    isLoading = true;
+    notifyListeners();
+    String message = await _db.deleteParagraph(id, index);
+    writingHistory!.removeAt(index);
+    isLoading = false;
+    notifyListeners();
+    return message;
   }
 }

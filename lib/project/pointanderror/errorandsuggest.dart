@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
-import 'package:magic_english_project/project/theme/apptheme.dart';
 
 class ErrorAndSuggest extends StatelessWidget {
   final WritingDto writingDto;

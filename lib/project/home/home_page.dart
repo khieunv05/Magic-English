@@ -5,7 +5,6 @@ import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
@@ -192,9 +191,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   }
 
   PreferredSizeWidget buildCustomAppBar(BuildContext context) {
-    final String calendarTooltip = "Tổng số ngày học của bạn.  " + _getLevelDescription(totalStudyDays);
+    final String calendarTooltip = "Tổng số ngày học của bạn.  ${_getLevelDescription(totalStudyDays)}";
     final IconData calendarIcon = _getLevelIcon(totalStudyDays);
-    final String fireTooltip = "Chuỗi học liên tục của bạn. ";
+    const String fireTooltip = "Chuỗi học liên tục của bạn. ";
     const IconData fireIcon = Icons.local_fire_department;
 
 
