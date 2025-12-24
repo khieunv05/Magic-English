@@ -27,7 +27,7 @@ Route::prefix('')->name('api.')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
 
         Route::get('show', [UserController::class, 'show']);
-        Route::post('update', [UserController::class, 'update']);
+        Route::post('user/update', [UserController::class, 'update']);
         Route::delete('destroy', [UserController::class, 'destroy']);
 
         Route::post('notification-settings', [UserController::class, 'notificationSettings']);

@@ -53,10 +53,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function wallet(): BelongsTo
-    {
-        return $this->belongsTo(Wallet::class);
-    }
+
 
     public function notificationSettings(): HasOne
     {

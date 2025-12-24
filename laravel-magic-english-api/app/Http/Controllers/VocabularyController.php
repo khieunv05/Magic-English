@@ -14,9 +14,14 @@ use App\Http\Requests\Vocabulary\UpdateVocabularyRequest;
 use App\Http\Resources\Vocabulary\VocabularyCollection;
 use App\Http\Resources\Vocabulary\VocabularyResource;
 use App\Services\Tracking\ActivityLogger;
+use App\Services\Vocabulary\VocabularyEnrichService;
 
 class VocabularyController extends Controller
 {
+  public function __construct(private readonly VocabularyEnrichService $enricher)
+  {
+  }
+
   // List vocabularies in a notebook
   public function index(Notebook $notebook, Request $request): JsonResponse
   {
@@ -121,5 +126,37 @@ class VocabularyController extends Controller
 
     $vocabulary->delete();
     return $this->apiResponse(true, 'Xóa từ vựng thành công', []);
+  }
+
+  // Enrich a vocabulary by word using Gemini
+  public function enrich(Request $request): JsonResponse
+  {
+    $request->validate([
+      'word' => ['required', 'string', 'max:100'],
+    ], [
+      'word.required' => 'Vui lòng nhập từ vựng.',
+      'word.string' => 'Từ vựng không hợp lệ.',
+      'word.max' => 'Độ dài tối đa 100 ký tự.',
+    ]);
+
+    $word = (string) $request->input('word');
+    $ai = $this->enricher->enrich($word);
+
+    if (!($ai['status'] ?? false)) {
+      return $this->apiResponse(false, $ai['message'] ?? 'AI error', $ai['result'] ?? []);
+    }
+
+    // Normalize minimal keys in case model returns variants
+    $payload = $ai['result'];
+    $result = [
+      'word' => $payload['word'] ?? $word,
+      'ipa' => $payload['ipa'] ?? null,
+      'meaning_vi' => $payload['meaning_vi'] ?? ($payload['meaning'] ?? null),
+      'part_of_speech' => $payload['part_of_speech'] ?? null,
+      'examples' => $payload['examples'] ?? [],
+      'cefr' => $payload['cefr'] ?? null,
+    ];
+
+    return $this->apiResponse(true, 'Tra cứu từ vựng bằng AI thành công', $result);
   }
 }
