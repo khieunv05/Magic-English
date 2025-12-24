@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 use App\Models\User;
 
@@ -41,9 +43,24 @@ class AuthController extends \App\Http\Controllers\Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
+            // Prepare username: use given or generate unique from name/email
+            $rawUsername = trim((string) $request->input('username'));
+            $email = strtolower(trim($request->input('email')));
+            $base = $rawUsername !== '' ? $rawUsername : (\Illuminate\Support\Str::slug((string) ($request->input('name') ?: explode('@', $email)[0])) ?: 'user');
+            $candidate = $base;
+            $i = 1;
+            while ($candidate !== '' && User::where('username', $candidate)->exists()) {
+                $candidate = $base . $i;
+                $i++;
+                if ($i > 50) { // avoid infinite loop
+                    $candidate = $base . '-' . substr(Str::random(4), 0, 4);
+                    break;
+                }
+            }
+
             $user = User::create([
                 'name' => $request->input('name'),
-                'username' => $request->input('username'),
+                'username' => $candidate ?: null,
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'code' => Str::random(20),
@@ -78,15 +95,33 @@ class AuthController extends \App\Http\Controllers\Controller
                 'email' => $user->email,
                 'otp_ttl_minutes' => $this->otpTtlMinutes,
             ]);
+        } catch (UniqueConstraintViolationException $e) {
+            $msg = strtolower($e->getMessage());
+            if (str_contains($msg, 'username') || str_contains($msg, 'users_username_unique')) {
+                return $this->apiResponse(false, 'Username is already taken. Please choose another.');
+            }
+            if (str_contains($msg, 'email') || str_contains($msg, 'users_email_unique')) {
+                return $this->apiResponse(false, 'This email has already been taken.');
+            }
+            return $this->apiResponse(false, 'This account information is already used.');
+        } catch (QueryException $e) {
+            $msg = strtolower($e->getMessage());
+            if (str_contains($msg, 'users_username_unique')) {
+                return $this->apiResponse(false, 'Username is already taken. Please choose another.');
+            }
+            if (str_contains($msg, 'users_email_unique') || str_contains($msg, 'for key `users_email_unique`')) {
+                return $this->apiResponse(false, 'This email has already been taken.');
+            }
+            return $this->apiResponse(true, 'Đăng ký thành công.');
         } catch (Throwable $e) {
             logger($e);
-            return $this->apiResponse(false, 'An error occurred while registering. ' . $e->getMessage());
+            return $this->apiResponse(false, 'An error occurred while registering.');
         }
     }
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $email    = strtolower(trim($request->input('email')));
+        $email = strtolower(trim($request->input('email')));
         $password = (string) $request->input('password');
 
         $user = User::where('email', $email)->first();
@@ -100,17 +135,16 @@ class AuthController extends \App\Http\Controllers\Controller
 
         if ($user->status !== User::ACTIVE) {
             return $this->apiResponse(false, match ($user->status) {
-                User::PENDING  => 'Your registration is pending approval. Please wait for confirmation.',
+                User::PENDING => 'Your registration is pending approval. Please wait for confirmation.',
                 User::INACTIVE => 'Your account is inactive. Please contact support.',
-                User::BANNED   => 'Your account has been banned. Access denied.',
-                default        => 'Account status invalid.',
+                User::BANNED => 'Your account has been banned. Access denied.',
+                default => 'Account status invalid.',
             });
         }
 
         $user->tokens()->delete();
         $plainTextToken = $user->createToken('api')->plainTextToken;
 
-        $user->load('wallet');
         $user->setHidden(['password', 'remember_token']);
         $user->token = $plainTextToken;
 
@@ -189,7 +223,7 @@ class AuthController extends \App\Http\Controllers\Controller
                 $mailable = new UserRegisteredMail($user);
                 $mailable->build();
                 $subject = $mailable->subject ?? 'Account registration successful';
-                $html    = $mailable->render();
+                $html = $mailable->render();
 
                 app(GmailService::class)->sendMail($user->email, $subject, $html);
                 dispatch(new SendWelcomeEmailJob($user->email, $subject, $html));
@@ -269,7 +303,7 @@ class AuthController extends \App\Http\Controllers\Controller
 
         if ($user) {
             $token = Password::createToken($user);
-            $ttl   = (int) config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
+            $ttl = (int) config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
 
             $resetUrl = rtrim((string) config('app.frontend_url'), '/')
                 . '/auth/user/reset-password?token=' . urlencode($token)
@@ -280,7 +314,7 @@ class AuthController extends \App\Http\Controllers\Controller
                 $mailable->build();
 
                 $subject = $mailable->subject ?? 'Password reset request';
-                $html    = $mailable->render();
+                $html = $mailable->render();
 
                 dispatch(new SendPasswordResetEmailJob($user->email, $subject, $html));
             } catch (Throwable $e) {
@@ -314,14 +348,14 @@ class AuthController extends \App\Http\Controllers\Controller
         });
 
         return match ($status) {
-            Password::PASSWORD_RESET   => $this->apiResponse(true, 'Password reset successful.'),
-            Password::INVALID_TOKEN    => $this->apiResponse(false, 'Invalid or expired reset token. Please request a new one.'),
-            Password::INVALID_USER     => $this->apiResponse(false, 'Email not found.'),
-            Password::RESET_THROTTLED  => $this->apiResponse(false, 'Too many attempts. Please try again later.'),
+            Password::PASSWORD_RESET => $this->apiResponse(true, 'Password reset successful.'),
+            Password::INVALID_TOKEN => $this->apiResponse(false, 'Invalid or expired reset token. Please request a new one.'),
+            Password::INVALID_USER => $this->apiResponse(false, 'Email not found.'),
+            Password::RESET_THROTTLED => $this->apiResponse(false, 'Too many attempts. Please try again later.'),
             default => (function () use ($status) {
-                logger()->warning('[PasswordReset] Unknown broker status', ['status' => $status]);
-                return $this->apiResponse(false, 'Password reset failed.');
-            })(),
+                    logger()->warning('[PasswordReset] Unknown broker status', ['status' => $status]);
+                    return $this->apiResponse(false, 'Password reset failed.');
+                })(),
         };
     }
 

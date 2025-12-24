@@ -14,16 +14,21 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'agree' => 'accepted',
             'heard_from' => 'required|string|max:255',
+            'username' => 'nullable|string|max:255|unique:users,username',
+            'contact_method' => 'nullable|string|max:255',
         ];
     }
 
     public function messages(): array
     {
         return [
+            'name.required' => 'Name is required.',
+            'name.max' => 'Name is too long.',
             'email.required' => 'Email is required.',
             'email.email' => 'The email format is invalid.',
             'email.unique' => 'This email has already been taken.',
@@ -33,6 +38,9 @@ class RegisterRequest extends FormRequest
             'agree.accepted' => 'You must accept the terms and conditions.',
             'heard_from.required' => 'The Heard From is required',
             'heard_from.max' => 'The source name is too long.',
+            'username.unique' => 'Username is already taken. Please choose another.',
+            'username.max' => 'Username is too long.',
+            'contact_method.max' => 'Contact method is too long.',
         ];
     }
 }
