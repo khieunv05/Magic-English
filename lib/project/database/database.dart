@@ -1,59 +1,33 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:magic_english_project/api_service/apiservice.dart';
-import 'package:magic_english_project/app/app.dart';
-import 'package:magic_english_project/firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:magic_english_project/login.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 class Database{
   final String _baseUrl = 'http://localhost:8000';
-  Future<String?> addUser(String username,String password)async {
-    try {
+  Future<String> addUser(String username,String password,String passwordConfirmation)async {
       final response = await http.post(
           Uri.parse('$_baseUrl/api/register'),
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: jsonEncode({
-            "username": username,
-            "password": password
+            "email": username,
+            "password": password,
+            "password_confirmation":passwordConfirmation
           })
 
-      ).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 201) {
-        print("Đăng ký thành công");
-        return null;
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return body['message'];
       }
       else {
-        try {
-          final body = json.decode(response.body);
-          print("Lỗi đăng ký: ${body['error']}");
-          return body['error'] ?? "Đăng ký thất bại";
-        }
-        catch (err) {
-          print('Lỗi máy chủ : ${response.statusCode}');
-          return 'Lỗi máy chủ';
-        }
+          throw Exception(body['message']);
       }
-    }
-    catch(err){
-      if(err is SocketException){
-        return 'Không có Internet';
-      }
-      else if(err is TimeoutException){
-        return 'Kết nối quá thời gian, vui lòng thử lại';
-      }
-      else{
-        return 'Lỗi không xác định';
-      }
-    }
   }
 
   Future<User> login(String username,String password)async{

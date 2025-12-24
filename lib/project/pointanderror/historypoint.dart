@@ -36,9 +36,9 @@ class HistoryPoint extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Lịch sử chấm điểm & sửa lỗi'),
         ),
-        body: SingleChildScrollView(
-          child: Center(
+        body: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('Bạn chưa có đoạn văn nào'),
                 SizedBox(
@@ -51,7 +51,6 @@ class HistoryPoint extends StatelessWidget {
               ],
             ),
           ),
-        ),
       );
     }
 

@@ -9,6 +9,7 @@ class ApiService {
     final token = prefs.getString('accessToken');
     Map<String,String> header = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json'
     };
     if(token != null && token.isNotEmpty){
       header['Authorization'] = 'Bearer $token';

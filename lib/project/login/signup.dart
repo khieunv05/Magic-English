@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -156,17 +154,16 @@ class _SignUpState extends State<SignUp> {
           textErrorMessage = '';
         });
         Database db = Database();
-        String? message = await db.addUser(_username, _password);
+        String? message = await db.addUser(_username, _password,_rewritePassword);
         if(!mounted) return;
-        (message == null) ? showTopNotification(context, type: ToastType.success, title:
-        'Chúc mừng', message: 'Đăng ký thành công')
-            : showTopNotification(context, type: ToastType.error, title:"Lỗi", message: message);
+        showTopNotification(context, type: ToastType.success, title:
+        'Chúc mừng', message: message);
       }
 
       catch(e){
         if(!mounted) return;
         setState(() {
-          textErrorMessage='Lỗi không xác định';
+          textErrorMessage=e.toString().replaceAll('Exception:', '');
         });
 
       }
