@@ -70,45 +70,27 @@ class AuthController extends \App\Http\Controllers\Controller
                 'heard_from' => $request->input('heard_from'),
             ]);
 
-            // Tạo OTP + set hết hạn
-            $otp = $this->generateOtp();
-            $user->email_verification_code = $otp;
-            $user->email_verification_expires_at = Carbon::now()->addMinutes($this->otpTtlMinutes);
+            // Xác minh email ngay khi đăng ký
+            $user->email_verified_at = Carbon::now();
+            $user->email_verification_code = null;
+            $user->email_verification_expires_at = null;
             $user->email_verification_attempts = 0;
             $user->save();
 
-            $this->seedResendCooldown($user->email);
-
-            try {
-                $mailable = new VerifyEmailOtpMail($user, $otp, $this->otpTtlMinutes);
-                $mailable->build();
-                $subject = $mailable->subject ?? 'Verify your email';
-                $html = $mailable->render();
-
-                dispatch(new SendVerifyEmailOtpJob($user->email, $subject, $html));
-            } catch (Throwable $e) {
-                logger()->error('Failed to send verify email OTP via Gmail API: ' . $e->getMessage());
-            }
-
-            return $this->apiResponse(true, 'Your registration was successful. Please check your email for the verification code.', [
+            return $this->apiResponse(true, 'Your registration was successful. Email verified.', [
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'otp_ttl_minutes' => $this->otpTtlMinutes,
+                'verified' => true,
             ]);
         } catch (UniqueConstraintViolationException $e) {
             $msg = strtolower($e->getMessage());
-            if (str_contains($msg, 'username') || str_contains($msg, 'users_username_unique')) {
-                return $this->apiResponse(false, 'Username is already taken. Please choose another.');
-            }
             if (str_contains($msg, 'email') || str_contains($msg, 'users_email_unique')) {
                 return $this->apiResponse(false, 'This email has already been taken.');
             }
             return $this->apiResponse(false, 'This account information is already used.');
         } catch (QueryException $e) {
             $msg = strtolower($e->getMessage());
-            if (str_contains($msg, 'users_username_unique')) {
-                return $this->apiResponse(false, 'Username is already taken. Please choose another.');
-            }
+
             if (str_contains($msg, 'users_email_unique') || str_contains($msg, 'for key `users_email_unique`')) {
                 return $this->apiResponse(false, 'This email has already been taken.');
             }
@@ -129,9 +111,6 @@ class AuthController extends \App\Http\Controllers\Controller
             return $this->apiResponse(false, 'Incorrect login information.');
         }
 
-        if (empty($user->email_verified_at)) {
-            return $this->apiResponse(false, 'Your email is not verified. Please check your inbox for the verification code.');
-        }
 
         if ($user->status !== User::ACTIVE) {
             return $this->apiResponse(false, match ($user->status) {
