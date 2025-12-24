@@ -5,7 +5,6 @@ import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
@@ -118,7 +117,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
   String _getLevelDescription(int days) {
-    if (days >= 1000) return 'Cấp độ: Huyền thoại';
+    if (days >= 1000) return 'Cấp độ: Huyền thoại ';
     if (days >= 500) return 'Cấp độ: Siêu bền vững';
     if (days >= 200) return 'Cấp độ: Bền bỉ';
     if (days >= 100) return 'Cấp độ: Bứt phá';
@@ -192,9 +191,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   }
 
   PreferredSizeWidget buildCustomAppBar(BuildContext context) {
-    final String calendarTooltip = "Tổng số ngày học của bạn.  " + _getLevelDescription(totalStudyDays);
+    final String calendarTooltip = "Tổng số ngày học của bạn.  ${_getLevelDescription(totalStudyDays)}";
     final IconData calendarIcon = _getLevelIcon(totalStudyDays);
-    final String fireTooltip = "Chuỗi học liên tục của bạn. ";
+    const String fireTooltip = "Chuỗi học liên tục của bạn. ";
     const IconData fireIcon = Icons.local_fire_department;
 
 
@@ -547,25 +546,22 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black
+            ),
           ),
         ),
-
-        const Icon(Icons.rotate_right, color: Colors.grey),
       ],
     );
+    }
   }
-}
-// -----------------------------------------------------------------------------
-// 4. Custom Painter (Giữ nguyên)
-// -----------------------------------------------------------------------------
 class PieChartPainter extends CustomPainter {
   final Map<String, double> data;
   final List<Color> colors;
   final double ringThickness;
-
   PieChartPainter(this.data, this.colors, {this.ringThickness = 30.0});
-
   @override
   void paint(Canvas canvas, Size size) {
     double total = data.values.fold(0, (sum, value) => sum + value);

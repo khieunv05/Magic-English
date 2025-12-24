@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/project/AI/sendtoAI.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
-import 'package:magic_english_project/project/database/database.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
-
+import 'package:provider/provider.dart';
 class WritingParagraph extends StatefulWidget {
   const WritingParagraph({super.key});
 
@@ -15,7 +14,12 @@ class WritingParagraph extends StatefulWidget {
 
 class _WritingParagraphState extends State<WritingParagraph> {
   final TextEditingController _controller = TextEditingController();
-  final SendToAI _AI = SendToAI();
+  //bool isLoading = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
@@ -25,7 +29,9 @@ class _WritingParagraphState extends State<WritingParagraph> {
       title: const Text('Viết đoạn văn',),
       centerTitle: false,
     ), body: SingleChildScrollView(
+
       padding: const EdgeInsets.only(bottom: AppTheme.singleChildScrollViewHeight),
+
       child: Column(
         children: [
           TextField(
@@ -39,10 +45,12 @@ class _WritingParagraphState extends State<WritingParagraph> {
             minLines: 15,
             maxLines: null,
           ),
+
           const SizedBox(height: 36,),
+
           SizedBox(
             width: double.infinity,
-            child: TextButton(onPressed: () async {
+            child: TextButton(onPressed:() async {
               if(_controller.text.trim().isEmpty){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
@@ -56,23 +64,58 @@ class _WritingParagraphState extends State<WritingParagraph> {
                   );
                 });
               }
+
+
               else{
-                final result = await _AI.checkGrammar(_controller.text);
-                if(!context.mounted) return;
-                WritingDto writingDto = WritingDto(result['point'], _controller.text,
-                    List<String>.from(result['errors' ] ?? []), result['suggests'] ?? '');
-                Database.addToParagraph(writingDto);
-                Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
-                  writingDto: WritingDto(result['point'], _controller.text,
-                      List<String>.from(result['errors'] ?? []), result['suggests'] ?? ''),
-                )));
-              }
-            }, child: Text('Chấm điểm',
+                  showLoading(context);
+
+                  try {
+                    WritingDto? writingDto = await context.read<
+                        ParagraphProvider>().addData(_controller.text);
+                    if(!context.mounted){
+                      return;
+                    }
+                    Navigator.of(context,rootNavigator: true).pop();
+                    if (writingDto == null) {
+                      showTopNotification(
+                          context,
+                          type: ToastType.error,
+                          title: 'Lỗi',
+                          message: 'Không nhận được dữ liệu phản hồi.'
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) =>
+                        ErrorAndSuggest(
+                            writingDto: writingDto),
+                    ));
+                  }
+                  catch(err){
+                    if (!context.mounted) return;
+                    Navigator.of(context,rootNavigator: true).pop();
+
+                    showTopNotification(context, type: ToastType.error, title: 'Lỗi'
+                        , message: err.toString().replaceAll('Exception:', ''));
+                  }
+                }
+
+
+            }, child:Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),
           )
         ],
       ),
     ));
   }
-
+  void showLoading(BuildContext context){
+    showDialog(context: context,
+        barrierDismissible: false
+        , builder: (dialogContext){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    });
+  }
 }

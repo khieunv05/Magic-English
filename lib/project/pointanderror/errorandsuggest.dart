@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
-import 'package:magic_english_project/project/theme/apptheme.dart';
 
 class ErrorAndSuggest extends StatelessWidget {
   final WritingDto writingDto;
 
   const ErrorAndSuggest({super.key, required this.writingDto});
-
-  // ------------------------------
-  // 🔵 CARD CHUNG (Content + Suggest)
-  // ------------------------------
   Widget buildInfoCard({
     required Color avatarColor,
     required IconData icon,
@@ -54,10 +49,6 @@ class ErrorAndSuggest extends StatelessWidget {
       ),
     );
   }
-
-  // ------------------------------
-  // 🔴 CARD LỖI (Many items)
-  // ------------------------------
   Widget buildErrorListCard({
     required Color avatarColor,
     required IconData icon,
@@ -137,9 +128,85 @@ class ErrorAndSuggest extends StatelessWidget {
     );
   }
 
-  // ------------------------------
-  // 🔵 MÀU CHO ĐIỂM
-  // ------------------------------
+
+  Widget buildSuggestionListCard({
+    required Color avatarColor,
+    required IconData icon,
+    required List<String> suggestions,
+    required BuildContext context,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.07),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header icon
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: avatarColor,
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                "Các gợi ý",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          if (suggestions.isEmpty)
+            Text(
+              "Không có gợi ý nào 🎉",
+              style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+            )
+          else
+            Column(
+              children: List.generate(
+                suggestions.length,
+                    (index) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.check, size: 8, color: Colors.green),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          suggestions[index],
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 15,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+        ],
+      ),
+    );
+  }
   Color getBackgroundColorFromPoint(int point) {
     if (point < 5) return Colors.redAccent;
     if (point < 8) return Colors.orangeAccent;
@@ -154,7 +221,7 @@ class ErrorAndSuggest extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
 
@@ -167,12 +234,12 @@ class ErrorAndSuggest extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // 🟢 ĐIỂM TRUNG TÂM
+
             CircleAvatar(
               radius: 42,
-              backgroundColor: getBackgroundColorFromPoint(writingDto.point),
+              backgroundColor: getBackgroundColorFromPoint(writingDto.score),
               child: Text(
-                writingDto.point.toString(),
+                writingDto.score.toString(),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -181,32 +248,28 @@ class ErrorAndSuggest extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-
-            // 📝 BÀI LÀM
             buildInfoCard(
               avatarColor: Theme.of(context).primaryColor,
               icon: Icons.book_outlined,
-              text: writingDto.content,
+              text: writingDto.originalText,
               context: context,
             ),
 
             const SizedBox(height: 28),
 
-            // ❌ DANH SÁCH LỖI
             buildErrorListCard(
               avatarColor: Colors.redAccent,
               icon: Icons.close_rounded,
-              errors: writingDto.errors,
+              errors: writingDto.errors??[],
               context: context,
             ),
 
             const SizedBox(height: 28),
 
-            // ✨ GỢI Ý
-            buildInfoCard(
+            buildSuggestionListCard(
               avatarColor: Colors.green,
               icon: Icons.lightbulb_outline,
-              text: "Gợi ý cải thiện: ${writingDto.suggests}",
+              suggestions: writingDto.suggestions??[],
               context: context,
             ),
 
