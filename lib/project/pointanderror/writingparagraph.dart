@@ -4,12 +4,13 @@ import 'package:magic_english_project/project/base/basescreen.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WritingParagraph extends StatefulWidget {
-  String? userId;
-  WritingParagraph({super.key,this.userId});
+  const WritingParagraph({super.key});
 
   @override
   State<WritingParagraph> createState() => _WritingParagraphState();
@@ -17,8 +18,6 @@ class WritingParagraph extends StatefulWidget {
 
 class _WritingParagraphState extends State<WritingParagraph> {
   final TextEditingController _controller = TextEditingController();
-  final SendToAI _AI = SendToAI();
-  bool didChange = false;
   bool isLoading = false;
   @override
   void initState() {
@@ -29,7 +28,7 @@ class _WritingParagraphState extends State<WritingParagraph> {
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
       leading: IconButton(onPressed: (){
-        Navigator.of(context).pop(didChange);
+        Navigator.of(context).pop();
       }, icon: const Icon(Icons.arrow_back),),
       title: const Text('Viết đoạn văn',),
       centerTitle: false,
@@ -65,25 +64,29 @@ class _WritingParagraphState extends State<WritingParagraph> {
                   );
                 });
               }
+
+
               else{
                 setState(() {
                   isLoading = true;
                 });
-                final result = await _AI.checkGrammar(_controller.text);
+                WritingDto? writingDto = await context.read<ParagraphProvider>().addData(_controller.text);
+                if(writingDto == null){
+                  setState(() {
+                    isLoading = false;
+                  });
+                  return;
+                }
                 if(!context.mounted) return;
-                WritingDto writingDto = WritingDto(result['point'], _controller.text,
-                    List<String>.from(result['mistakes' ] ?? []), result['suggests'] ?? '');
-                Database db = Database();
-                await db.addParagraph(widget.userId!, writingDto);
                 setState(() {
                   isLoading = false;
                 });
-                didChange = true;
                  Navigator.push(context,MaterialPageRoute(builder: (context) => ErrorAndSuggest(
-                  writingDto: WritingDto(result['point'], _controller.text,
-                      List<String>.from(result['mistakes'] ?? []), result['suggests'] ?? ''),
-                )));
+                  writingDto: writingDto),
+                ));
               }
+
+
             }, child:(isLoading == true)?const CircularProgressIndicator() :Text('Chấm điểm',
             style: Theme.of(context).textTheme.labelLarge,)),
           )

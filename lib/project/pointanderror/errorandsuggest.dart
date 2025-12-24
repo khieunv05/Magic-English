@@ -158,9 +158,9 @@ class ErrorAndSuggest extends StatelessWidget {
 
             CircleAvatar(
               radius: 42,
-              backgroundColor: getBackgroundColorFromPoint(writingDto.point),
+              backgroundColor: getBackgroundColorFromPoint(writingDto.score),
               child: Text(
-                writingDto.point.toString(),
+                writingDto.score.toString(),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -172,7 +172,7 @@ class ErrorAndSuggest extends StatelessWidget {
             buildInfoCard(
               avatarColor: Theme.of(context).primaryColor,
               icon: Icons.book_outlined,
-              text: writingDto.content,
+              text: writingDto.originalText,
               context: context,
             ),
 
@@ -181,7 +181,7 @@ class ErrorAndSuggest extends StatelessWidget {
             buildErrorListCard(
               avatarColor: Colors.redAccent,
               icon: Icons.close_rounded,
-              mistakes: writingDto.mistakes,
+              mistakes: writingDto.errors??[],
               context: context,
             ),
 
@@ -190,7 +190,7 @@ class ErrorAndSuggest extends StatelessWidget {
             buildInfoCard(
               avatarColor: Colors.green,
               icon: Icons.lightbulb_outline,
-              text: "Gợi ý cải thiện: ${writingDto.suggests}",
+              text: "Gợi ý cải thiện: ${writingDto.suggestions}",
               context: context,
             ),
 

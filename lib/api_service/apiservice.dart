@@ -11,7 +11,7 @@ class ApiService {
       'Content-Type': 'application/json',
     };
     if(token != null && token.isNotEmpty){
-      header['Authorization'] = 'Bearer $token 222';
+      header['Authorization'] = 'Bearer $token';
     }
     return header;
   }

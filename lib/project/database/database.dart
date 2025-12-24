@@ -97,50 +97,39 @@ class Database{
     }
 
   }
-  Future<List<WritingDto>> getAllParagraph(String userId)async{
-    List<WritingDto> listParagraph = [];
-      final response = await http.get(
-          Uri.parse('$_baseUrl/api/paragraphs/$userId'),
-          headers: {
-            "Content-Type":"application/json"
-          }
-      ).timeout(const Duration(seconds: 10));
-        if (response.statusCode == 200) {
-          final body = jsonDecode(response.body);
-          List<dynamic> listData = body['data'];
-          listParagraph = listData.map((item){
-            return WritingDto.fromMap(item);
-          }).toList();
-          return listParagraph;
-        }
-        return listParagraph;
+  Future<List<WritingDto>> getAllParagraph()async{
+    Uri uri = Uri.parse('$_baseUrl/api/grammar-checks?page_size=20');
+    final response = await ApiService.get(uri);
+    if(response.statusCode == 200){
+      final body = jsonDecode(response.body);
+      List<dynamic> rawData = body['data']??[];
+      List<WritingDto> data = rawData.map((item){
+        return WritingDto.fromMap(item);
+      }).toList();
+      return data;
+    }
+    else{
+      throw Exception('Lỗi lấy dữ liệu');
+    }
+
+
 
     
     
   }
 
-  Future<void> addParagraph(String userId,WritingDto writingDto) async{
-    try{
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/submit-paragraph'),
-        headers: {
-          "Content-Type":"application/json"
-        },
-        body: jsonEncode({
-          "content":writingDto.content,
-          "point":writingDto.point,
-          "mistakes":writingDto.mistakes,
-          "suggest":writingDto.suggests,
-          "userId":userId
-      })
-      ).timeout(const Duration(seconds: 10));
-      if(response.statusCode == 201){
-        print("Thêm thành công");
+  Future<WritingDto> addParagraph(String text) async{
+      Uri uri = Uri.parse('$_baseUrl/api/grammar-checks');
+      final response = await ApiService.post(uri,body: jsonEncode({
+        "text":text
+      }));
+      if(response.statusCode == 200){
+        final body = jsonDecode(response.body);
+        return WritingDto.fromMap(body['data']);
       }
-    }
-    catch(e){
-      print("Thêm thất bại");
-    }
+      else{
+        throw Exception('Lỗi khi thêm mới');
+      }
   }
 
   Future<String?> deleteParagraph(String id) async {

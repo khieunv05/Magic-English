@@ -1,95 +1,75 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:magic_english_project/app/app.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/base/basescreen.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
 import 'package:magic_english_project/project/pointanderror/writingparagraph.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
+import 'package:magic_english_project/project/provider/userprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/firebase_service.dart';
-
-class HistoryPoint extends StatefulWidget{
+class HistoryPoint extends StatelessWidget {
   const HistoryPoint({super.key});
 
-  @override
-  State<HistoryPoint> createState() {
-    return HistoryPointState();
-  }
 
-}
-class HistoryPointState extends State<HistoryPoint> {
-  Future<List<WritingDto>>?  _futureParagraph;
-  String? userId;
-  @override
-  Future<void> getUserIdAndGetData()async{
-    final sharedPre = await SharedPreferences.getInstance();
-    if(!mounted) return;
-    setState(() {
-      userId = sharedPre.getString('userId');
-    });
-    if(userId == null || userId!.isEmpty){
-      return;
-    }
-    Database db = Database();
-    final futureData = db.getAllParagraph(userId!);
-    if(!mounted) return;
-    setState(() {
-      _futureParagraph = futureData;
-    });
-  }
-  @override
-  void initState(){
-    super.initState();
-    getUserIdAndGetData();
-  }
   @override
   Widget build(BuildContext context) {
-    if(_futureParagraph == null ) {
+    List<WritingDto>? paragraphs = context.watch<ParagraphProvider>().writingHistory;
+    bool isLoading = context.watch<ParagraphProvider>().isLoading;
+    int? userId = context.watch<UserProvider>().user?.id;
+    if(paragraphs == null && !isLoading){
+      context.read<ParagraphProvider>().initData();
+      return const Center(child: CircularProgressIndicator(),);
+    }
+    if(isLoading) {
         return const Center(child: CircularProgressIndicator());
+    }
+    if (paragraphs == null) {
+      return const Center(child: Text("Không có dữ liệu hoặc lỗi tải trang"));
+    }
+    if(paragraphs.isEmpty){
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Lịch sử chấm điểm & sửa lỗi'),
+        ),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: [
+                const Text('Bạn chưa có đoạn văn nào'),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(onPressed: () async{
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>  const WritingParagraph()));
+                  }, child: Text('Viết đoạn văn',style:
+                  Theme.of(context).textTheme.labelLarge,)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
 
     return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
       centerTitle: false,
-    ), body: FutureBuilder<List<WritingDto>>(future: _futureParagraph
-      , builder: (BuildContext context, snapshot) {
-        if(snapshot.hasError){
-          return Center(child: Text('Lỗi: ${snapshot.error}'),);
-        }
-        if(snapshot.connectionState == ConnectionState.waiting){
-          return const Center(child: CircularProgressIndicator(),);
-        }
-        if(!snapshot.hasData || snapshot.data!.isEmpty|| snapshot.data! == []){
-            return Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Chưa có đoạn văn nào',style: Theme.of(context).textTheme.bodyMedium,),
-              const SizedBox(height: 32,),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(onPressed: (){
-                  Navigator.push(context,MaterialPageRoute(builder: (context)=>  WritingParagraph(userId: userId,)));
-                }, child: Text('Viết đoạn văn',style:
-                Theme.of(context).textTheme.labelLarge,)),
-              ),
-            ],
-          );
-
-        }
-        List<WritingDto> data = snapshot.data!;
-        return buildBody(data,context);
-      },
-
-    ),
+    ), body:  buildBody(paragraphs, context)
     );
   }
+
+
+
+
   Color getCardBackgroundColor(int point){
     if(point >=0 && point<5){
       return Colors.red;
@@ -99,14 +79,14 @@ class HistoryPointState extends State<HistoryPoint> {
     }
     return Colors.green;
   }
-  Widget buildBody(List<WritingDto> _data,BuildContext context){
+  Widget buildBody(List<WritingDto> data,BuildContext context){
     return Column(
       children: [
         Expanded(
           child: ListView.separated(
-            itemCount: _data.length,
+            itemCount: data.length,
             itemBuilder: (context, index) {
-              final item = _data[index];
+              final item = data[index];
               return Card(
                 clipBehavior: Clip.hardEdge,
                 child: InkWell(
@@ -114,12 +94,7 @@ class HistoryPointState extends State<HistoryPoint> {
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) =>
                       ErrorAndSuggest(
-                        writingDto: WritingDto(
-                          item.point,
-                          item.content,
-                          List<String>.from(item.mistakes),
-                          item.suggests,
-                        ),
+                        writingDto: item,
                       ),
                     ));
                   },
@@ -129,12 +104,10 @@ class HistoryPointState extends State<HistoryPoint> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: getCardBackgroundColor(item.point),
+                            backgroundColor: getCardBackgroundColor(item.score),
                             radius: 20,
-                            child: Text(item.point.toString(),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.white
-                              ),),
+                            child: Text(item.score.toString(),
+                              style: Theme.of(context).textTheme.bodyMedium,),
                           ),
                           const VerticalDivider(
                             color: AppTheme.blackColor,
@@ -148,7 +121,7 @@ class HistoryPointState extends State<HistoryPoint> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Text(item.content,
+                                Text(item.originalText,
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
                                     fontSize: 16
@@ -167,7 +140,7 @@ class HistoryPointState extends State<HistoryPoint> {
                           ),
 
                           IconButton(onPressed: (){
-                            (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
+                           // (item.id == null) ? print('Lỗi') : deleteParagraphButton(context,item.id!);
                           }, icon: const Icon(Icons.remove_circle_outline,color: Colors.red,))
                         ],
                       ),
@@ -185,8 +158,7 @@ class HistoryPointState extends State<HistoryPoint> {
         SizedBox(
           width: double.infinity,
           child: TextButton(onPressed: () async{
-            bool didChange = await Navigator.push(context,MaterialPageRoute(builder: (context)=>  WritingParagraph(userId: userId,)));
-            if(didChange) getUserIdAndGetData();
+           Navigator.push(context,MaterialPageRoute(builder: (context)=>  const WritingParagraph()));
           }, child: Text('Viết đoạn văn',style:
             Theme.of(context).textTheme.labelLarge,)),
         ),
@@ -194,7 +166,7 @@ class HistoryPointState extends State<HistoryPoint> {
       ],
     );
   }
-  void deleteParagraphButton(String paragraphId){
+  void deleteParagraphButton(BuildContext context,String paragraphId){
     showDialog(context: context, builder: (context){
       return AlertDialog(title: const Text('Bạn có muốn xóa không?'),
         titleTextStyle: Theme.of(context).textTheme.bodyMedium,
