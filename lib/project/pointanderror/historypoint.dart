@@ -1,88 +1,71 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
-import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
 import 'package:magic_english_project/project/pointanderror/writingparagraph.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
-import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/firebase_service.dart';
-
-class HistoryPoint extends StatefulWidget{
+class HistoryPoint extends StatelessWidget {
   const HistoryPoint({super.key});
 
-  @override
-  State<HistoryPoint> createState() {
-    return HistoryPointState();
-  }
 
-}
-class HistoryPointState extends State<HistoryPoint> {
-  late final Stream<QuerySnapshot> _paragraphStream;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    User? user = FirebaseService.instance.currentUser;
-    if(user == null){
-      _paragraphStream = const Stream.empty();
-    }
-    else{
-      _paragraphStream = FirebaseFirestore.instance.collection('users').doc(user.uid).collection('writing_history')
-          .snapshots();
-
-    }
-  }
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if(user == null) {
-      return const Center(child: Text('Vui lòng đăng nhập để xem lịch sử'),);
+    List<WritingDto>? paragraphs = context.watch<ParagraphProvider>().writingHistory;
+    bool isLoading = context.watch<ParagraphProvider>().isLoading;
+    if(paragraphs == null && !isLoading){
+      try {
+        context.read<ParagraphProvider>().initData();
+        return const Center(child: CircularProgressIndicator());
+      }
+      catch(err){
+        showTopNotification(context, type: ToastType.error, title: 'Lỗi',
+            message: err.toString().replaceAll('Exception:', ''));
+      }
+    }
+    if(isLoading) {
+        return const Center(child: CircularProgressIndicator());
+    }
+    if (paragraphs == null) {
+      return const Center(child: Text("Không có dữ liệu hoặc lỗi tải trang"));
+    }
+    if(paragraphs.isEmpty){
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Lịch sử chấm điểm & sửa lỗi'),
+        ),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: [
+                const Text('Bạn chưa có đoạn văn nào'),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(onPressed: () async{
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>  const WritingParagraph()));
+                  }, child: Text('Viết đoạn văn',style:
+                  Theme.of(context).textTheme.labelLarge,)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
 
     return Scaffold(appBar: AppBar(
       title: const Text('Lịch sử chấm điểm & sửa lỗi',),
-      centerTitle: true,
-    ), body: StreamBuilder<QuerySnapshot>(stream: _paragraphStream
-      , builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
-        if(snapshot.hasError){
-          return Center(child: Text('Lỗi: ${snapshot.error}'),);
-        }
-        if(snapshot.connectionState == ConnectionState.waiting){
-          return const Center(child: CircularProgressIndicator(),);
-        }
-        if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
-            return Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Chưa có đoạn văn nào',style: Theme.of(context).textTheme.bodyMedium,),
-              const SizedBox(height: 32,),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(onPressed: (){
-                  Navigator.push(context,MaterialPageRoute(builder: (context)=> const WritingParagraph()));
-                }, child: Text('Viết đoạn văn',style:
-                Theme.of(context).textTheme.labelLarge,)),
-              ),
-            ],
-          );
-
-        }
-        List<WritingDto> data = snapshot.data!.docs.map((item){
-          return WritingDto.fromMap(item.id,item.data() as Map<String,dynamic>);
-        }).toList();
-        return buildBody(data,context);
-      },
-
-    ),
+      centerTitle: false,
+    ), body:  buildBody(paragraphs, context)
     );
   }
+
+
+
+
   Color getCardBackgroundColor(int point){
     if(point >=0 && point<5){
       return Colors.red;
@@ -92,40 +75,35 @@ class HistoryPointState extends State<HistoryPoint> {
     }
     return Colors.green;
   }
-  Widget buildBody(List<WritingDto> _data,BuildContext context){
+  Widget buildBody(List<WritingDto> data,BuildContext parentContext){
     return Column(
       children: [
         Expanded(
           child: ListView.separated(
-            itemCount: _data.length,
-            itemBuilder: (context, index) {
-              final item = _data[index];
+            itemCount: data.length,
+            itemBuilder: (itemContext, index) {
+              final item = data[index];
               return Card(
                 clipBehavior: Clip.hardEdge,
                 child: InkWell(
                   splashColor: Colors.black38.withAlpha(40),
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                    Navigator.push(parentContext, MaterialPageRoute(builder: (context) =>
                       ErrorAndSuggest(
-                        writingDto: WritingDto(
-                          item.point,
-                          item.content,
-                          List<String>.from(item.errors),
-                          item.suggests,
-                        ),
+                        writingDto: item,
                       ),
                     ));
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: IntrinsicHeight(
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: getCardBackgroundColor(item.point),
-                            radius: 24,
-                            child: Text(item.point.toString(),
-                              style: Theme.of(context).textTheme.bodyMedium,),
+                            backgroundColor: getCardBackgroundColor(item.score),
+                            radius: 20,
+                            child: Text(item.score.toString(),
+                              style: Theme.of(parentContext).textTheme.bodyMedium,),
                           ),
                           const VerticalDivider(
                             color: AppTheme.blackColor,
@@ -139,20 +117,32 @@ class HistoryPointState extends State<HistoryPoint> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Text(item.content,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                                Text(item.originalText,
+                                  style: Theme.of(parentContext).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16
+                                  ),
                                   maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
-
+                                Text('Bấm vào để xem chi tiết',
+                                style: Theme.of(parentContext).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w300,
+                                  color: AppTheme.primaryColor
+                                ),)
                               ],
                             ),
                           ),
 
                           IconButton(onPressed: (){
-                            (item.id == null) ? print('Lỗi') : deleteParagraphButton(item.id!);
-                          }, icon: const Icon(Icons.remove_circle_outline))
+                            if(item.id == null){
+                              showTopNotification(parentContext, type: ToastType.error
+                                  , title: 'Lỗi', message: 'id của đoạn văn không tồn tại');
+                              return;
+                            }
+                            deleteParagraphButton(parentContext,item.id!,index);
+                          }, icon: const Icon(Icons.remove_circle_outline,color: Colors.red,))
                         ],
                       ),
                     ),
@@ -168,29 +158,55 @@ class HistoryPointState extends State<HistoryPoint> {
         const SizedBox(height: 32,),
         SizedBox(
           width: double.infinity,
-          child: TextButton(onPressed: (){
-            Navigator.push(context,MaterialPageRoute(builder: (context)=> const WritingParagraph()));
+          child: TextButton(onPressed: () async{
+           Navigator.push(parentContext,MaterialPageRoute(builder: (context)=>  const WritingParagraph()));
           }, child: Text('Viết đoạn văn',style:
-            Theme.of(context).textTheme.labelLarge,)),
+            Theme.of(parentContext).textTheme.labelLarge,)),
         ),
         const SizedBox(height: AppTheme.singleChildScrollViewHeight,)
       ],
     );
   }
-  void deleteParagraphButton(String paragraphId){
-    showDialog(context: context, builder: (context){
+  void deleteParagraphButton(BuildContext context,int? paragraphId,int index){
+    showDialog(context: context, builder: (dialogContext){
       return AlertDialog(title: const Text('Bạn có muốn xóa không?'),
-        titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+        titleTextStyle: Theme.of(dialogContext).textTheme.bodyMedium,
         actionsAlignment: MainAxisAlignment.spaceAround,
         actions: [
+          IconButton(onPressed: ()async {
+            String? message;
+            try {
+              Navigator.of(dialogContext).pop();
+              await Future.delayed(const Duration(milliseconds: 200));
+              if(!context.mounted){
+                return;
+              }
+              message = await context.read<ParagraphProvider>()
+                  .deleteData(paragraphId, index);
+              if (!context.mounted) {
+                return;
+              }
+              showTopNotification(context,
+                  type: ToastType.success,
+                  title: 'Chúc mừng',
+                  message: message);
+            }
+            catch(err){
+              if (!context.mounted) {
+                return;
+              }
+              showTopNotification(context,
+                  type: ToastType.error,
+                  title: 'Lỗi',
+                  message: err.toString().replaceAll('Exception:', ''));
+              }
+            }
+          ,
+              icon: const Icon(Icons.verified_user_outlined)),
+
+
           IconButton(onPressed: (){
-            Database.deleteParagraph(paragraphId);
-            Navigator.pop(context);
-            showTopNotification(context, type: ToastType.success, title:
-                'Xóa thành công', message: '');
-          }, icon: const Icon(Icons.verified_user_outlined)),
-          IconButton(onPressed: (){
-            Navigator.pop(context);
+            Navigator.pop(dialogContext);
           }, icon: const Icon(Icons.cancel))
         ],
       );

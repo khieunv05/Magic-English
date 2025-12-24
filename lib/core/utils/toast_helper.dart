@@ -10,8 +10,6 @@ void showTopNotification(
   Duration duration = const Duration(seconds: 3),
 }) {
   final overlay = Overlay.of(context);
-
-  // chọn màu và icon theo type
   Color iconBg;
   IconData iconData;
   switch (type) {

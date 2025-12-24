@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:magic_english_project/navigator/tabnavigate.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
@@ -34,15 +34,13 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>()
   ];
-
-  List<VoidCallback> _getBottomActions(BuildContext context) {
-    return [
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainAppWrapper(selectedIndex: 0))),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-    ];
-  }
+  final tabList =  [
+    const HomeScreenContent(),
+    const NotebooksPage(),
+    const HistoryPoint(),
+    const ProfileScreen()
+  ];
+  Set<int> tabSelected = {0};
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +48,39 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
           appBar: null,
           body: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: IndexedStack(
-                index: selectedIndex,
+            child: PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) async{
+                if(didPop) return;
+                final currentNavigator = navigatorStates[selectedIndex].currentState;
+                if(currentNavigator != null && currentNavigator.canPop()){
+                  currentNavigator.pop();
+                }
+                else{
+                  if(selectedIndex != 0){
+                    setState(() {
+                      selectedIndex = 0;
+                    });
+                  }
+                  else {
+                    await SystemNavigator.pop();
+                  }
+                }
+              },
 
-                children: [
-                  TabNavigate(root: const HomeScreenContent(), navigatorKey: navigatorStates[0]),
-                  TabNavigate(root: const NotebooksPage(), navigatorKey: navigatorStates[1]),
-                  TabNavigate(root: const HistoryPoint(), navigatorKey: navigatorStates[2]),
-                  TabNavigate(root: const ProfileScreen(), navigatorKey: navigatorStates[3]),
-                ],
-                ),
+              child: IndexedStack(
+                  index: selectedIndex,
+
+                  children: List.generate(tabList.length, (index){
+                    if(tabSelected.contains(index)){
+                      return TabNavigate(root: tabList[index], navigatorKey: navigatorStates[index]);
+                    }
+                    else{
+                      return const SizedBox();
+                    }
+                  }),
+                  ),
+            ),
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: selectedIndex,
@@ -71,6 +92,7 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
               onTap: (index){
                 setState(() {
                   selectedIndex = index;
+                  tabSelected.add(index);
                 });
               },
               items: const [
@@ -95,7 +117,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
   String _getLevelDescription(int days) {
-    if (days >= 1000) return 'Cấp độ: Huyền thoại';
+    if (days >= 1000) return 'Cấp độ: Huyền thoại ';
     if (days >= 500) return 'Cấp độ: Siêu bền vững';
     if (days >= 200) return 'Cấp độ: Bền bỉ';
     if (days >= 100) return 'Cấp độ: Bứt phá';
@@ -169,9 +191,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   }
 
   PreferredSizeWidget buildCustomAppBar(BuildContext context) {
-    final String calendarTooltip = "Tổng số ngày học của bạn.  " + _getLevelDescription(totalStudyDays);
+    final String calendarTooltip = "Tổng số ngày học của bạn.  ${_getLevelDescription(totalStudyDays)}";
     final IconData calendarIcon = _getLevelIcon(totalStudyDays);
-    final String fireTooltip = "Chuỗi học liên tục của bạn. ";
+    const String fireTooltip = "Chuỗi học liên tục của bạn. ";
     const IconData fireIcon = Icons.local_fire_department;
 
 
@@ -184,11 +206,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
                 _buildAvatarItem(),
-                const SizedBox(width: 80),
+                const SizedBox(width: 10),
                 _buildStatItem(
                   context,
                   currentIcon: calendarIcon,
@@ -196,7 +215,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                   isCalendar: true,
                   tooltipText: calendarTooltip,
                 ),
-                const SizedBox(width: 80),
+                const SizedBox(width: 10),
                 _buildStatItem(
                     context,
                     currentIcon: fireIcon,
@@ -204,8 +223,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                     isFire: true,
                     tooltipText: fireTooltip
                 ),
-              ],
-            ),
             const Icon(Icons.notifications_none, color: Colors.black, size: 28),
           ],
         ),
@@ -390,7 +407,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.35,
+            width: MediaQuery.of(context).size.width * 0.45,
             height: 160,
             child: CustomPaint(
               painter: PieChartPainter(data, colors, ringThickness: 30.0),
@@ -406,12 +423,12 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                 Color legendColor = colors[index];
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: Row(
                     children: [
                       Container(
-                        width: 10,
-                        height: 10,
+                        width: 80,
+                        height: 20,
                         decoration: BoxDecoration(
                           color: legendColor,
                           shape: BoxShape.circle,
@@ -529,25 +546,22 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black
+            ),
           ),
         ),
-
-        const Icon(Icons.rotate_right, color: Colors.grey),
       ],
     );
+    }
   }
-}
-// -----------------------------------------------------------------------------
-// 4. Custom Painter (Giữ nguyên)
-// -----------------------------------------------------------------------------
 class PieChartPainter extends CustomPainter {
   final Map<String, double> data;
   final List<Color> colors;
   final double ringThickness;
-
   PieChartPainter(this.data, this.colors, {this.ringThickness = 30.0});
-
   @override
   void paint(Canvas canvas, Size size) {
     double total = data.values.fold(0, (sum, value) => sum + value);

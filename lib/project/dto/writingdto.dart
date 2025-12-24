@@ -1,30 +1,29 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WritingDto{
-  String? id;
-  int point = 0;
-  String content = '';
-  List<String> errors = [];
-  String suggests = '';
-  DateTime? createdAt;
-  WritingDto(this.point, this.content, this.errors, this.suggests,[this.id]);
+  int? id;
+  int score = 0;
+  String originalText = '';
+  List<String>? errors = [];
+  List<String>? suggestions = [];
+  WritingDto(this.score, this.originalText, this.errors, this.suggestions,[this.id]);
 
 
 
-  WritingDto.fromMap(String this.id,Map<String,dynamic> data){
-    content = data['content'] ??  '';
+  WritingDto.fromMap(Map<String,dynamic> data){
+    id = data['id'];
+    originalText = data['original_text'] ??  '';
     errors = List<String>.from(data['errors'] ?? []);
-    point = data['point'] ?? 0;
-    suggests = data['suggests'] ?? '';
-    createdAt = (data['date'] as Timestamp?)?.toDate();
+    score = data['score'] ?? 0;
+    suggestions = List<String>.from(data['suggestions'] ?? []);
+    //createdAt = (data['date'] as Timestamp?)?.toDate();
   }
   Map<String, dynamic> toMap(){
     return {
-      'point': point,
-      'content': content,
+      'score': score,
+      'original_text': originalText,
       'errors': errors,
-      'suggests':suggests,
-      'date': createdAt ?? FieldValue.serverTimestamp()
+      'suggestions':suggestions,
+      //'date': createdAt ?? FieldValue.serverTimestamp()
     };
   }
 
