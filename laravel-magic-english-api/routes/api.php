@@ -73,6 +73,7 @@ Route::middleware(['auth:sanctum'])->prefix('notebooks')->group(function () {
 
 // Vocabularies by id (protected)
 Route::middleware(['auth:sanctum'])->prefix('vocabularies')->group(function () {
+    Route::post('enrich', [VocabularyController::class, 'enrich']);
     Route::get('{vocabulary}', [VocabularyController::class, 'show']);
     Route::put('{vocabulary}', [VocabularyController::class, 'update']);
     Route::patch('{vocabulary}', [VocabularyController::class, 'update']);

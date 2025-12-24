@@ -138,4 +138,78 @@ PROMPT;
     $decoded = json_decode($json, true);
     return json_last_error() === JSON_ERROR_NONE ? $decoded : null;
   }
+
+  /**
+   * Generic generator with custom instruction and parts.
+   * $partsTexts: array of strings appended after instruction as separate parts.
+   * Returns ['status'=>bool,'message'=>string,'result'=>array|mixed]
+   */
+  public function generateCustom(string $instruction, array $partsTexts): array
+  {
+    if (empty($this->apiKey)) {
+      return [
+        'status' => false,
+        'message' => 'Missing GEMINI_API_KEY configuration.',
+        'result' => [],
+      ];
+    }
+
+    $parts = [['text' => $instruction]];
+    foreach ($partsTexts as $t) {
+      $parts[] = ['text' => (string) $t];
+    }
+
+    $payload = [
+      'contents' => [
+        [
+          'role' => 'user',
+          'parts' => $parts,
+        ],
+      ],
+    ];
+
+    $url = $this->baseUrl . '/' . trim($this->model, '/') . ':generateContent';
+
+    $response = Http::timeout(20)
+      ->withHeaders([
+        'x-goog-api-key' => $this->apiKey,
+        'Content-Type' => 'application/json',
+      ])
+      ->acceptJson()
+      ->post($url, $payload);
+
+    if (!$response->successful()) {
+      return [
+        'status' => false,
+        'message' => 'Gemini API error: ' . $response->status(),
+        'result' => [
+          'response' => $response->json(),
+        ],
+      ];
+    }
+
+    $data = $response->json();
+    $textOut = $this->extractText($data);
+    $parsed = $this->safeJsonDecode($textOut);
+    if ($parsed === null) {
+      $clean = preg_replace('/^```json|```$/m', '', $textOut);
+      $parsed = $this->safeJsonDecode((string) $clean);
+    }
+
+    if (!is_array($parsed)) {
+      return [
+        'status' => false,
+        'message' => 'Unable to parse AI response.',
+        'result' => [
+          'raw' => $textOut,
+        ],
+      ];
+    }
+
+    return [
+      'status' => true,
+      'message' => 'Success',
+      'result' => $parsed,
+    ];
+  }
 }
