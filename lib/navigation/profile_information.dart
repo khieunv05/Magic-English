@@ -32,7 +32,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<UserProvider>().getUserData();
     User? user = context.read<UserProvider>().user;
     _initFields(user);
   }
@@ -208,7 +207,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             child: DropdownButtonFormField<String>(
               value: _selectedGender,
               decoration: _inputDecoration('Giới tính'),
-              items: ['Nam', 'Nữ', 'Khác'].map((String value) {
+              items: ['male', 'female', 'others'].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),

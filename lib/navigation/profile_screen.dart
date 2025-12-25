@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/navigation/profile_information.dart' ;
-import 'package:magic_english_project/project/home/home_page.dart';
-import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
-import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/navigation/show_logout_dialog.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-  List<VoidCallback> _getBottomActions(BuildContext context) {
-    return [
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NotebooksPage())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HistoryPoint())),
-          () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {

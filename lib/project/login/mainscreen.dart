@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:magic_english_project/project/login/signin.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import '../../services/shared_preferences_service.dart';
-import '../../services/firebase_service.dart';
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
   Future<bool> checkLogin() async {
     final bool rememberMe = SharedPreferencesService.instance.getRememberMe();
-    final user = FirebaseService.instance.currentUser;
-    if (user != null && rememberMe) {
+    if (rememberMe) {
       return true;
     }
-    if (user != null && !rememberMe) {
-      await FirebaseService.instance.signOut();
+    if (!rememberMe) {
       return false;
     }
     return false;

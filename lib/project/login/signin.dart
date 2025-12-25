@@ -3,6 +3,8 @@ import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:provider/provider.dart';
+import '../provider/userprovider.dart';
 import '../theme/apptheme.dart';
 
 class SignIn extends StatefulWidget {
@@ -139,7 +141,7 @@ class _SignInState extends State<SignIn> {
       Database db = Database();
       User user = await db.login(_username,_password);
       if (!mounted) return;
-      //context.read<UserProvider>().setUser(user);
+      context.read<UserProvider>().setUser(user);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
