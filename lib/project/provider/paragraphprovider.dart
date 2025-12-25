@@ -18,6 +18,10 @@ class ParagraphProvider extends ChangeNotifier{
     }
     notifyListeners();
   }
+  void clearData(){
+    writingHistory = null;
+    notifyListeners();
+  }
   Future<WritingDto?> addData(String text)async{
     if(writingHistory == null){
       return null;
