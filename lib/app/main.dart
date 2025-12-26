@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/api_service/apiservice.dart';
 import 'package:magic_english_project/project/base/shared_preferences_data.dart';
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/provider/userprovider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/shared_preferences_service.dart';
 import 'app.dart';
 Future<void> main() async {

@@ -120,5 +120,22 @@ class Database{
       throw Exception('Gặp lỗi khi xóa ');
     }
   }
+  Future<String> updateUserData(User user)async{
+    Uri uri = Uri.parse('$_baseUrl/api/user/update');
+    final response = await ApiService.post(uri,body: jsonEncode(
+    {
+      "name":user.name,
+      "phone":user.phone,
+      "birthday":user.dateOfBirth,
+      "gender":user.gender
+    })
+    );
+    if(response.statusCode == 200){
+      return 'Cập nhật thành công';
+    }
+    else{
+      throw Exception('Cập nhật thất bại');
+    }
+  }
 
 }

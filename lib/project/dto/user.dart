@@ -28,7 +28,7 @@ class User {
       return '';
     }
     try{
-      DateTime parsedDate = DateTime.parse(dateString);
+      DateTime parsedDate = DateTime.parse(dateString).toLocal();
       return DateFormat('dd/MM/yyyy').format(parsedDate);
 
     }

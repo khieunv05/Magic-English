@@ -9,13 +9,8 @@ class ParagraphProvider extends ChangeNotifier{
   Future<void> initData()async{
     isLoading = true;
     notifyListeners();
-    try{
     writingHistory = await _db.getAllParagraph();
     isLoading = false;
-    }
-    catch(err){
-      print(err.toString());
-    }
     notifyListeners();
   }
   void clearData(){
