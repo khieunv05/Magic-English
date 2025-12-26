@@ -6,25 +6,37 @@ import 'package:magic_english_project/project/pointanderror/writingparagraph.dar
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:provider/provider.dart';
-
-class HistoryPoint extends StatelessWidget {
+class HistoryPoint  extends StatefulWidget{
   const HistoryPoint({super.key});
 
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return HistoryPointState();
+  }
 
+}
+class HistoryPointState extends State<HistoryPoint> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      final provider = context.read<ParagraphProvider>();
+      if(provider.writingHistory == null && !provider.isLoading){
+        try{provider.initData();
+        }
+        catch(err){
+          showTopNotification(context, type: ToastType.error, title: 'Lỗi'
+              , message: 'Lỗi lấy data');
+        }
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     List<WritingDto>? paragraphs = context.watch<ParagraphProvider>().writingHistory;
     bool isLoading = context.watch<ParagraphProvider>().isLoading;
-    if(paragraphs == null && !isLoading){
-      try {
-        context.read<ParagraphProvider>().initData();
-        return const Center(child: CircularProgressIndicator());
-      }
-      catch(err){
-        showTopNotification(context, type: ToastType.error, title: 'Lỗi',
-            message: err.toString().replaceAll('Exception:', ''));
-      }
-    }
     if(isLoading) {
         return const Center(child: CircularProgressIndicator());
     }

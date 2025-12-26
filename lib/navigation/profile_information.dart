@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
+import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/provider/userprovider.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ class PersonalInfoScreen extends StatefulWidget {
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
+  final Database _db = Database();
   final _formKey = GlobalKey<FormState>();
   final List<String> _availableAvatars = [
     'assets/images/avt_boiroi.jpg',
@@ -106,20 +108,42 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  void _saveData() {
+  Future<void> _saveData(BuildContext parentContext) async{
+    String message = '';
     if (_formKey.currentState!.validate()) {
-      User user = User(
+      try {
+        User user = User(
           name: _fullNameController.text,
-          email :_emailController.text,
+          email: _emailController.text,
           dateOfBirth: _dateOfBirthController.text,
-          phone : _phoneController.text,
-          gender : _selectedGender,
+          phone: _phoneController.text,
+          gender: _selectedGender,
           imagePath: _tempAssetPath,
-      );
-      context.read<UserProvider>().setUser(user);
-      context.read<UserProvider>().stopEditing();
-      showTopNotification(context, type: ToastType.success, title: 'Thành công', message: 'Đã cập nhật thông tin.');
+        );
+        context.read<UserProvider>().setUser(user);
+        context.read<UserProvider>().stopEditing();
+        showLoading();
+        message = await _db.updateUserData(user);
+        if (!parentContext.mounted) {
+          return;
+        }
+        Navigator.of(parentContext,rootNavigator: true).pop();
+        showTopNotification(parentContext, type: ToastType.success,
+            title: 'Thành công',
+            message: 'Đã cập nhật thông tin.');
+      }
+      catch(err){
+        Navigator.of(parentContext,rootNavigator: true).pop();
+        showTopNotification(parentContext, type: ToastType.success, title:
+            'Lỗi', message: message);
+      }
     }
+  }
+  void showLoading(){
+    showDialog(context: context,
+        barrierDismissible: false, builder: (dialogContext){
+      return const Center(child: CircularProgressIndicator(),);
+    });
   }
 
   @override
@@ -188,7 +212,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           ),
           const SizedBox(height: 30),
           _inputField(_fullNameController, 'Họ tên'),
-          _inputField(_emailController, 'Email', keyboardType: TextInputType.emailAddress),
+          _inputField(_emailController, 'Email', keyboardType: TextInputType.emailAddress,enable: false),
 
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -222,7 +246,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           ),
 
           const SizedBox(height: 40),
-          _buildBtn('Lưu thay đổi', _saveData),
+          _buildBtn('Lưu thay đổi',(){
+            _saveData(context);
+          }),
         ],
       ),
     );
@@ -238,10 +264,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  Widget _inputField(TextEditingController ctrl, String label, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _inputField(TextEditingController ctrl, String label, {TextInputType keyboardType = TextInputType.text,bool enable = true}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
+        enabled: enable,
         controller: ctrl,
         keyboardType: keyboardType,
         decoration: _inputDecoration(label),
