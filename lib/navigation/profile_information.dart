@@ -133,7 +133,14 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             message: 'Đã cập nhật thông tin.');
       }
       catch(err){
-        Navigator.of(parentContext,rootNavigator: true).pop();
+        if(!parentContext.mounted){
+          return;
+        }
+        final navigator = Navigator.of(parentContext, rootNavigator: true);
+        if(navigator.canPop()){
+          Navigator.of(parentContext,rootNavigator: true).pop();
+        }
+
         showTopNotification(parentContext, type: ToastType.success, title:
             'Lỗi', message: message);
       }
