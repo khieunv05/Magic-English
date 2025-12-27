@@ -3,6 +3,7 @@ import 'package:magic_english_project/project/base/baseloginscreen.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:provider/provider.dart';
 import '../provider/userprovider.dart';
 import '../theme/apptheme.dart';
@@ -21,6 +22,14 @@ class _SignInState extends State<SignIn> {
   bool? checkBoxSaveAcoount = false;
   bool canViewPassword = false;
   String errorMessage = '';
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      context.read<ParagraphProvider>().clearData();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return BaseLoginScreen(bodyContent:
@@ -82,8 +91,9 @@ class _SignInState extends State<SignIn> {
     return Form(key: _formKey,child:
     Column(children: [
       TextFormField(
+        keyboardType: TextInputType.emailAddress,
         decoration: const InputDecoration(
-            hintText: 'Tài khoản',
+            hintText: 'Email',
             prefixIcon: Icon(Icons.person_2_outlined,size: 16,)
 
         ),

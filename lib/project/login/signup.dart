@@ -62,7 +62,7 @@ class _SignUpState extends State<SignUp> {
     Column(children: [
       TextFormField(
         decoration: const InputDecoration(
-          hintText: 'Tài khoản',
+          hintText: 'Email',
           prefixIcon: Icon(Icons.person_2_outlined,size: 16,)
 
         ),

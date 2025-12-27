@@ -8,6 +8,7 @@ import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
 import 'package:magic_english_project/project/provider/home_page_provider.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
@@ -49,6 +50,7 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
   @override
   Widget build(BuildContext context) {
         return Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: null,
           body: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -287,6 +289,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
    };
     return _buildBody(context);
   }
+
 
   Widget _buildBody(BuildContext context) {
     const Color infoIconColor = Color(0xFF1E88E5);
