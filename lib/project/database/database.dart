@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:magic_english_project/api_service/apiservice.dart';
+import 'package:magic_english_project/project/dto/category_english.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:http/http.dart' as http;
@@ -59,10 +60,10 @@ class Database{
 
   }
   Future<User> getUserData()async{
-    Uri uri = Uri.parse('$_baseUrl/api/show');
-    final response = await ApiService.get(uri);
-    if(response.statusCode == 200){
-      final body = jsonDecode(response.body);
+    Uri userDataUri = Uri.parse('$_baseUrl/api/show');
+    final responseUserData = await ApiService.get(userDataUri);
+    if(responseUserData.statusCode == 200){
+      final body = jsonDecode(responseUserData.body);
       User user = User.fromJson(body['result']);
       return user;
     }
@@ -70,6 +71,18 @@ class Database{
       throw Exception('Lỗi lấy thông tin');
     }
 
+  }
+  Future<CategoryEnglish> getUserCategoryEnglish() async {
+    Uri uri = Uri.parse('$_baseUrl/api/tracking/visualization');
+    final response = await ApiService.get(uri);
+    if(response.statusCode == 200){
+      final body = jsonDecode(response.body);
+      CategoryEnglish categoryEnglish = CategoryEnglish.fromJson(body['result']);
+      return categoryEnglish;
+    }
+    else{
+      throw Exception('Lỗi lấy thông tin');
+    }
   }
   Future<List<WritingDto>> getAllParagraph()async{
     Uri uri = Uri.parse('$_baseUrl/api/grammar-checks?page_size=20');
