@@ -22,7 +22,10 @@ class NotebookController extends Controller
     $userId = Auth::id();
 
     // Always scope to the authenticated user's notebooks
-    $query = Notebook::query()->with(['user'])->where('user_id', $userId);
+    $query = Notebook::query()
+      ->with(['user'])
+      ->withCount('vocabularies')
+      ->where('user_id', $userId);
 
     // Filter by name (exact param) or generic query 'q'
     if ($request->filled('name')) {
@@ -63,6 +66,7 @@ class NotebookController extends Controller
     try {
       $notebook = Notebook::create($data);
       $notebook->load(['user']);
+      $notebook->loadCount('vocabularies');
 
       return $this->apiResponse(true, 'Tạo sổ tay thành công', new NotebookResource($notebook));
     } catch (\Illuminate\Database\QueryException $e) {
@@ -81,6 +85,7 @@ class NotebookController extends Controller
       return $this->apiResponse(false, 'Forbidden', []);
     }
     $notebook->load(['user']);
+    $notebook->loadCount('vocabularies');
     return $this->apiResponse(true, 'Lấy thông tin sổ tay thành công', new NotebookResource($notebook));
   }
 
@@ -93,6 +98,7 @@ class NotebookController extends Controller
     $data = $request->validated();
     $notebook->update($data);
     $notebook->load(['user']);
+    $notebook->loadCount('vocabularies');
 
     return $this->apiResponse(true, 'Chỉnh sửa sổ tay thành công', new NotebookResource($notebook));
   }
