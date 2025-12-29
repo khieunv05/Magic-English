@@ -552,9 +552,18 @@ class _NotebooksPageState extends State<NotebooksPage> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3A94E7),
+                      backgroundColor: _filter == _NotebookFilter.all
+                          ? const Color(0xFF3A94E7)
+                          : Colors.white,
                     ),
-                    child: const Text('Tất cả',style: TextStyle(color: Colors.white),),
+                    child: Text(
+                      'Tất cả',
+                      style: TextStyle(
+                        color: _filter == _NotebookFilter.all
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
