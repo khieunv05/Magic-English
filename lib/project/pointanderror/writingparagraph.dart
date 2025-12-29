@@ -94,7 +94,10 @@ class _WritingParagraphState extends State<WritingParagraph> {
                   }
                   catch(err){
                     if (!context.mounted) return;
-                    Navigator.of(context,rootNavigator: true).pop();
+
+                    if(Navigator.of(context,rootNavigator: true).canPop()){
+                      Navigator.of(context,rootNavigator: true).pop();
+                    }
 
                     showTopNotification(context, type: ToastType.error, title: 'Lỗi'
                         , message: err.toString().replaceAll('Exception:', ''));

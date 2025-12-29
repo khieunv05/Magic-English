@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/navigator/tabnavigate.dart';
+import 'package:magic_english_project/project/dto/category_english.dart';
 import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
+import 'package:magic_english_project/project/provider/home_page_provider.dart';
+import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
+import 'package:provider/provider.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -45,6 +50,7 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
   @override
   Widget build(BuildContext context) {
         return Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: null,
           body: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -112,10 +118,29 @@ class HomeScreenContent extends StatefulWidget {
 }
 
 class _HomeScreenContentState extends State<HomeScreenContent> {
+   Map<String, double>? categoryData;
+   CategoryEnglish? categoryEnglish;
+   Map<String, double>? cefrData;
+  @override
+  void initState() {
+    super.initState();
+    // TODO: implement initState
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      try {
+        context.read<HomePageProvider>().initData();
+      }
+      catch(err){
+        showTopNotification(context, type: ToastType.error, title: 'Lỗi',
+            message: 'Lỗi khi lấy dữ liệu');
+      }
+    });
+  }
   String _selectedBarLabel = '';
   double _selectedBarValue = 0;
   final int totalStudyDays = 200;
   final int currentFireStreak = 12;
+
+
   String _getLevelDescription(int days) {
     if (days >= 1000) return 'Cấp độ: Huyền thoại ';
     if (days >= 500) return 'Cấp độ: Siêu bền vững';
@@ -229,26 +254,12 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-  final Map<String, double> categoryData = const {
-    'Danh từ': 0.11, // 11%
-    'Tính từ': 0.24, // 24%
-    'Động từ': 0.26, // 26%
-    'Còn lại': 0.39, // 39%
-  };
   final List<Color> pieColors = const [
     Color(0xFF66BB6A),
     Color(0xFFFFEB3B),
     Color(0xFFE53935),
     Color(0xFF9FA8DA),
   ];
-  final Map<String, double> cefrData = const {
-    'A1': 30,
-    'A2': 18,
-    'B1': 27,
-    'B2': 60,
-    'C1': 42,
-    'C2': 23,
-  };
 
   void _showInstructionModal(BuildContext context) {
     showDialog(
@@ -261,13 +272,42 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
+    categoryEnglish = context.watch<HomePageProvider>().categoryEnglish;
+    categoryData = {
+      'Danh từ': (categoryEnglish?.noun ?? 1)/(categoryEnglish?.totalVocab ?? 1) ,
+      'Tính từ': (categoryEnglish?.adj ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
+      'Động từ':(categoryEnglish?.verb ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
+      'Còn lại':(categoryEnglish?.adv ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
+    };
+   cefrData = {
+     'A1':(categoryEnglish?.A1 ?? 1),
+   'A2':(categoryEnglish?.A2 ?? 1),
+   'B1':(categoryEnglish?.B1 ?? 1),
+   'B2':(categoryEnglish?.B2 ?? 1),
+   'C1':(categoryEnglish?.C1 ?? 1),
+   'C2':(categoryEnglish?.C2 ?? 1),
+   };
     return _buildBody(context);
   }
+
 
   Widget _buildBody(BuildContext context) {
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
-
+    categoryData ??= {
+        'Danh từ': 0.25,
+        'Tính từ': 0.25,
+        'Động từ': 0.25,
+        'Còn lại': 0.25,
+      };
+    cefrData ??=  {
+      'A1': 30,
+      'A2': 18,
+      'B1': 27,
+      'B2': 60,
+      'C1': 42,
+      'C2': 23,
+    };
       return Scaffold(
         appBar: buildCustomAppBar(context),
         body: SingleChildScrollView(
@@ -338,14 +378,14 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                             text: 'Phân loại theo từ loại',
                           ),
                           const SizedBox(height: 12),
-                          _buildPieChartSection(context, categoryData, pieColors),
+                          _buildPieChartSection(context, categoryData!, pieColors),
                           const SizedBox(height: 20),
                           _buildSortOptionWithRefresh(
                             leadingIcon: Icons.bar_chart,
                             text: 'Phân loại theo cấp độ CEFR',
                           ),
                           const SizedBox(height: 12),
-                          _buildBarChart(context, cefrData),
+                          _buildBarChart(context, cefrData!),
                         ],
                       ),
                     ),

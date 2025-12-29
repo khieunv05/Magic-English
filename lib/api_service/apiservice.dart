@@ -1,14 +1,15 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/app/app.dart';
+import 'package:magic_english_project/project/base/shared_preferences_data.dart';
 import 'package:magic_english_project/project/login/signin.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   static Future<Map<String,String>> _getHeader() async{
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = SharedPreferencesData.sharedPreferences;
     final token = prefs.getString('accessToken');
     Map<String,String> header = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json'
     };
     if(token != null && token.isNotEmpty){
       header['Authorization'] = 'Bearer $token';
@@ -17,7 +18,7 @@ class ApiService {
   }
   static Future<http.Response> _handleResponse(http.Response response)async{
     if(response.statusCode == 401){
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = SharedPreferencesData.sharedPreferences;
       await prefs.clear();
       navigatorKey.currentState!.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context){

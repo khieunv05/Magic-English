@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import 'onboarding_screen.dart';
 
@@ -33,13 +32,11 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
   }
   void checkLoginStatus() async {
     await Future.delayed(const Duration(milliseconds: 2000));
-    if (FirebaseAuth.instance.currentUser != null) {
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    }
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const HomePage()),
+      // );
   }
   @override
   Widget build(BuildContext context) {
