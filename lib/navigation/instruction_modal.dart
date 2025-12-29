@@ -61,8 +61,8 @@ class InstructionModal extends StatelessWidget {
                   description: 'Phân bổ số lượng từ vựng theo các cấp độ A1–C2, hỗ trợ theo dõi sự tiến bộ và định hướng lộ trình học phù hợp.',
                 ),
                 _buildListItem(
-                  title: 'Tương tác và cập nhật',
-                  description: 'Bạn có thể chuyển đổi chế độ hiển thị, cập nhật cho phép làm mới dữ liệu nhằm đảm bảo báo số liệu phản ánh đúng tiến độ hiện tại bằng biểu tượng bên cạnh tiêu đề.',
+                  title: 'Tương tác với chế độ hiển thị',
+                  description: 'Bạn có thể chuyển đổi chế độ hiển của của các màn hình khác nhau bằng thanh điều hướng và có thể tương tác với biểu đồ để hiện thị dữ liệu nhằm đảm bảo báo số liệu phản ánh đúng tiến độ hiện tại.',
                 ),
                 const SizedBox(height: 15),
                 const Text(

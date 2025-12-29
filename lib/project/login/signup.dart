@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/base/baseloginscreen.dart';
+import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -63,7 +62,7 @@ class _SignUpState extends State<SignUp> {
     Column(children: [
       TextFormField(
         decoration: const InputDecoration(
-          hintText: 'Tài khoản',
+          hintText: 'Email',
           prefixIcon: Icon(Icons.person_2_outlined,size: 16,)
 
         ),
@@ -154,33 +153,17 @@ class _SignUpState extends State<SignUp> {
           isLoading = true;
           textErrorMessage = '';
         });
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: _username,
-            password: _password);
-        String userId = userCredential.user!.uid;
-        FirebaseFirestore.instance.collection('users').doc(userId).set({
-          'email': _username,
-          'created_at': FieldValue.serverTimestamp(),
-        }
-        );
-        if(mounted){
-          showTopNotification(context, type: ToastType.success, title:
-              'Chúc mừng', message: 'Đăng ký thành công');
-        }
+        Database db = Database();
+        String? message = await db.addUser(_username, _password,_rewritePassword);
+        if(!mounted) return;
+        showTopNotification(context, type: ToastType.success, title:
+        'Chúc mừng', message: message);
       }
 
-      on FirebaseAuthException catch(e){
+      catch(e){
         if(!mounted) return;
         setState(() {
-          if(e.code == 'weak-password') {
-            textErrorMessage = 'Mật khẩu yếu';
-          }
-          else if(e.code == 'email-already-in-use'){
-            textErrorMessage = 'Email đã được sử dụng';
-          }
-          else if(e.code == 'invalid-email'){
-            textErrorMessage = 'Không đúng định dạng gmail';
-          }
+          textErrorMessage=e.toString().replaceAll('Exception:', '');
         });
 
       }
