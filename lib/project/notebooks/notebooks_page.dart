@@ -1,17 +1,100 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
-import 'package:magic_english_project/project/home/home_page.dart';
-import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/vocab/vocab_page.dart';
-class NotebooksPage extends StatelessWidget {
+import 'package:magic_english_project/core/utils/popup_helper.dart';
+import 'package:magic_english_project/project/dto/notebook.dart';
+import 'package:magic_english_project/project/notebooks/notebook_api.dart';
+
+enum _NotebookFilter { all, favorites }
+
+class NotebooksPage extends StatefulWidget {
   const NotebooksPage({super.key});
 
-  Widget _buildNotebookCard(
-      BuildContext context,
-      String title,
-      int count,
-      ) {
+  @override
+  State<NotebooksPage> createState() => _NotebooksPageState();
+}
+
+class _NotebooksPageState extends State<NotebooksPage> {
+  _NotebookFilter _filter = _NotebookFilter.all;
+  bool _isLoading = true;
+  List<Notebook> _notebooks = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadNotebooks();
+  }
+
+  Future<void> _reloadNotebooks() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final data = await NotebookApi.fetchNotebooks(perPage: 50);
+      if (!mounted) return;
+      setState(() {
+        _notebooks = data;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      showTopNotification(
+        context,
+        type: ToastType.error,
+        title: 'Lỗi',
+        message: e.toString(),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Notebook> get _filteredNotebooks {
+    if (_filter == _NotebookFilter.favorites) {
+      return _notebooks.where((n) => n.isFavorite).toList();
+    }
+    return _notebooks;
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '--/--/----';
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd/$mm/${date.year}';
+  }
+
+  Future<void> _toggleFavorite(Notebook notebook) async {
+    final updated = notebook.copyWith(isFavorite: !notebook.isFavorite);
+    setState(() {
+      _notebooks = _notebooks
+          .map((n) => n.id == notebook.id ? updated : n)
+          .toList(growable: false);
+    });
+    try {
+      await NotebookApi.update(
+        notebook: notebook,
+        isFavorite: updated.isFavorite,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // rollback
+      setState(() {
+        _notebooks = _notebooks
+            .map((n) => n.id == notebook.id ? notebook : n)
+            .toList(growable: false);
+      });
+      showTopNotification(
+        context,
+        type: ToastType.error,
+        title: 'Lỗi',
+        message: e.toString(),
+      );
+    }
+  }
+
+  Widget _buildNotebookCard(BuildContext context, Notebook notebook) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -28,26 +111,19 @@ class NotebooksPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Row(
           children: [
-            // Spine
-            Container(
-              width: 6,
-              color: const Color(0xFF3A94E7),
-            ),
-
-            // MAIN CONTENT
+            Container(width: 6, color: const Color(0xFF3A94E7)),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // TITLE + ICON
+                    // TITLE + ICONS
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
-                            title,
+                            notebook.name,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 14,
@@ -56,53 +132,109 @@ class NotebooksPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Icon(Icons.bookmark_outline, size: 18),
+                        GestureDetector(
+                          onTap: () => _toggleFavorite(notebook),
+                          child: Icon(
+                            notebook.isFavorite
+                                ? Icons.bookmark
+                                : Icons.bookmark_outline,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // MORE BUTTON
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert, size: 18),
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showEditNotebookModal(
+                                context,
+                                notebook: notebook,
+                              );
+                            } else if (value == 'delete') {
+                              showDeleteConfirm(
+                                context: context,
+                                notebookName: notebook.name,
+                                onConfirm: () async {
+                                  try {
+                                    await NotebookApi.delete(id: notebook.id);
+                                    if (!mounted) return;
+                                    showTopNotification(
+                                      context,
+                                      type: ToastType.success,
+                                      title: 'Đã xóa',
+                                      message:
+                                          'Sổ tay "${notebook.name}" đã được xóa',
+                                    );
+                                    await _reloadNotebooks();
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    showTopNotification(
+                                      context,
+                                      type: ToastType.error,
+                                      title: 'Lỗi',
+                                      message: e.toString(),
+                                    );
+                                  }
+                                },
+                              );
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Sửa sổ tay'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete, color: Colors.red, size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Xóa sổ tay',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
 
-                    const SizedBox(height: 4),
-
-                    // NUMBER
+                    const SizedBox(height: 6),
                     Text(
-                      '$count',
+                      '${notebook.vocabulariesCount}',
                       style: const TextStyle(
-                        fontSize: 34,   // giảm từ 42 → 34
+                        fontSize: 34,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Từ vựng',
-                      style: TextStyle(
-                        fontSize: 18,   // giảm nhẹ
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-
-                    // Khoảng trống vừa đủ để không tràn
-                    const SizedBox(height: 8),
-
-                    // DATE
-                    const Text(
-                      'Ngày tạo: 21/12/2025',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
-                      ),
+                    const Text('Từ vựng',
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Ngày tạo: ${_formatDate(notebook.createdAt)}',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
-
-
-
 
 
   void _showCreateNotebookModal(BuildContext context) {
@@ -204,11 +336,32 @@ class NotebooksPage extends StatelessWidget {
                               onPressed: isLoading ? null : () async {
                                 if (!(_formKey.currentState?.validate() ?? false)) return;
                                 setState(() { isLoading = true; });
-                                await Future.delayed(const Duration(milliseconds: 600));
-                                Navigator.of(ctx).pop();
-                                // show top notification instead of snackbar
-                                showTopNotification(parentContext, type: ToastType.success, title: 'Thành công', message: 'Tạo mới sổ tay "' + name + '" thành công');
-                                setState(() { isLoading = false; });
+                                try {
+                                  await NotebookApi.create(
+                                    name: name.trim(),
+                                    description: '',
+                                    isFavorite: false,
+                                  );
+                                  if (!mounted) return;
+                                  Navigator.of(ctx).pop();
+                                  showTopNotification(
+                                    parentContext,
+                                    type: ToastType.success,
+                                    title: 'Thành công',
+                                    message: 'Tạo mới sổ tay "$name" thành công',
+                                  );
+                                  await _reloadNotebooks();
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  showTopNotification(
+                                    parentContext,
+                                    type: ToastType.error,
+                                    title: 'Lỗi',
+                                    message: e.toString(),
+                                  );
+                                } finally {
+                                  setState(() { isLoading = false; });
+                                }
                               },
                               child: isLoading
                                   ? const SizedBox(
@@ -239,6 +392,142 @@ class NotebooksPage extends StatelessWidget {
     );
   }
 
+  void _showEditNotebookModal(
+      BuildContext context, {
+        required Notebook notebook,
+      }) {
+    final formKey = GlobalKey<FormState>();
+    String name = notebook.name;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: bottomInset,
+            left: 16,
+            right: 16,
+            top: 12,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              bool isLoading = false;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Sửa sổ tay',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  Form(
+                    key: formKey,
+                    child: TextFormField(
+                      initialValue: notebook.name,
+                      decoration: const InputDecoration(
+                        hintText: 'Nhập tên sổ tay',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (v) => name = v,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Vui lòng nhập tên sổ tay';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              if (!formKey.currentState!.validate()) return;
+                              setState(() {
+                                isLoading = true;
+                              });
+                              try {
+                                await NotebookApi.update(
+                                  notebook: notebook,
+                                  name: name.trim(),
+                                );
+                                if (!mounted) return;
+                                Navigator.pop(ctx);
+                                showTopNotification(
+                                  context,
+                                  type: ToastType.success,
+                                  title: 'Thành công',
+                                  message: 'Đã cập nhật sổ tay "$name"',
+                                );
+                                await _reloadNotebooks();
+                              } catch (e) {
+                                if (!mounted) return;
+                                showTopNotification(
+                                  context,
+                                  type: ToastType.error,
+                                  title: 'Lỗi',
+                                  message: e.toString(),
+                                );
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3A94E7),
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Lưu'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -257,64 +546,76 @@ class NotebooksPage extends StatelessWidget {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _filter = _NotebookFilter.all;
+                      });
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3A94E7),
+                      backgroundColor: _filter == _NotebookFilter.all
+                          ? const Color(0xFF3A94E7)
+                          : Colors.white,
                     ),
-                    child: const Text('Tất cả',style: TextStyle(color: Colors.white),),
+                    child: Text(
+                      'Tất cả',
+                      style: TextStyle(
+                        color: _filter == _NotebookFilter.all
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom(
-                    backgroundColor:  Colors.white,
-                  ), child: const Text('Sổ tay yêu thích',style:TextStyle(color:Colors.black) )),
+                  ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _filter = _NotebookFilter.favorites;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _filter == _NotebookFilter.favorites
+                            ? const Color(0xFF3A94E7)
+                            : Colors.white,
+                      ),
+                      child: Text(
+                        'Sổ tay yêu thích',
+                        style: TextStyle(
+                          color: _filter == _NotebookFilter.favorites
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      )),
                 ],
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: GridView.count(
-                  padding: const EdgeInsets.only(bottom: 120),
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 3/3.5,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay IT', 45),
-                    ),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay Marketing', 131),
-                    ),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay NET', 31),
-                    ),
-                  ],
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_filteredNotebooks.isEmpty
+                        ? const Center(child: Text('Chưa có sổ tay'))
+                        : GridView.count(
+                            padding: const EdgeInsets.only(bottom: 120),
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 3 / 3.5,
+                            children: _filteredNotebooks.map((notebook) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VocabPage(
+                                        notebookName: notebook.name,
+                                        notebookId: notebook.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: _buildNotebookCard(context, notebook),
+                              );
+                            }).toList(),
+                          )),
               ),
             ],
           ),

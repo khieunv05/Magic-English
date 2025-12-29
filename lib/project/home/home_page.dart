@@ -34,10 +34,10 @@ class MainAppWrapper extends StatefulWidget {
 class _MainAppWrapperState extends State<MainAppWrapper> {
    int selectedIndex = 0;
   final navigatorStates = [
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>()
+    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_0'),
+    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_1'),
+    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_2'),
+    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_3')
   ];
   final tabList =  [
     const HomeScreenContent(),
@@ -138,7 +138,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   String _selectedBarLabel = '';
   double _selectedBarValue = 0;
   final int totalStudyDays = 200;
-  final int currentFireStreak = 12;
+  // final int currentFireStreak = 12;
 
 
   String _getLevelDescription(int days) {
@@ -214,46 +214,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     }
     return statContent;
   }
-
-  PreferredSizeWidget buildCustomAppBar(BuildContext context) {
-    final String calendarTooltip = "Tổng số ngày học của bạn.  ${_getLevelDescription(totalStudyDays)}";
-    final IconData calendarIcon = _getLevelIcon(totalStudyDays);
-    const String fireTooltip = "Chuỗi học liên tục của bạn. ";
-    const IconData fireIcon = Icons.local_fire_department;
-
-
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(80.0),
-      child: Container(
-        padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 8),
-        color: Colors.white,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-                _buildAvatarItem(),
-                const SizedBox(width: 10),
-                _buildStatItem(
-                  context,
-                  currentIcon: calendarIcon,
-                  label: totalStudyDays.toString(),
-                  isCalendar: true,
-                  tooltipText: calendarTooltip,
-                ),
-                const SizedBox(width: 10),
-                _buildStatItem(
-                    context,
-                    currentIcon: fireIcon,
-                    label: currentFireStreak.toString(),
-                    isFire: true,
-                    tooltipText: fireTooltip
-                ),
-            const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-          ],
-        ),
-      ),
-    );
-  }
   final List<Color> pieColors = const [
     Color(0xFF66BB6A),
     Color(0xFFFFEB3B),
@@ -272,6 +232,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<HomePageProvider>();
+    final overview = provider.overviewData;
+    int vocabFromApi = overview?.result?.totalVocabularyLearned ?? 0;
+    int streakFromApi = overview?.result?.streak.streak ?? 0;
     categoryEnglish = context.watch<HomePageProvider>().categoryEnglish;
     categoryData = {
       'Danh từ': (categoryEnglish?.noun ?? 1)/(categoryEnglish?.totalVocab ?? 1) ,
@@ -287,13 +251,53 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
    'C1':(categoryEnglish?.C1 ?? 1),
    'C2':(categoryEnglish?.C2 ?? 1),
    };
-    return _buildBody(context);
+    return _buildBody(context, vocabFromApi, streakFromApi);
   }
 
 
-  Widget _buildBody(BuildContext context) {
+   PreferredSizeWidget buildCustomAppBar(BuildContext context, {required int streak, required int totalStudyDays}){
+     final String calendarTooltip = "Tổng số ngày học của bạn.  ${_getLevelDescription(totalStudyDays)}";
+     final IconData calendarIcon = _getLevelIcon(totalStudyDays);
+     const String fireTooltip = "Chuỗi học liên tục của bạn. ";
+     const IconData fireIcon = Icons.local_fire_department;
+
+
+     return PreferredSize(
+       preferredSize: const Size.fromHeight(80.0),
+       child: Container(
+         padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 8),
+         color: Colors.white,
+         child: Row(
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           crossAxisAlignment: CrossAxisAlignment.center,
+           children: [
+             _buildAvatarItem(),
+             const SizedBox(width: 10),
+             _buildStatItem(
+               context,
+               currentIcon: calendarIcon,
+               label: totalStudyDays.toString(),
+               isCalendar: true,
+               tooltipText: calendarTooltip,
+             ),
+             const SizedBox(width: 10),
+             _buildStatItem(
+                 context,
+                 currentIcon: fireIcon,
+                 label: streak.toString(),
+                 isFire: true,
+                 tooltipText: fireTooltip
+             ),
+             const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+           ],
+         ),
+       ),
+     );
+   }
+   Widget _buildBody(BuildContext context, int totalVocab, int streakCount){
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
+    const int defaultStudyDays = 200;
     categoryData ??= {
         'Danh từ': 0.25,
         'Tính từ': 0.25,
@@ -308,8 +312,12 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       'C1': 42,
       'C2': 23,
     };
-      return Scaffold(
-        appBar: buildCustomAppBar(context),
+    return Scaffold(
+      appBar: buildCustomAppBar(
+        context,
+        streak: streakCount,
+        totalStudyDays: defaultStudyDays,
+      ),
         body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,8 +366,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                   border: Border.all(color: amberColor, width: 3),
                                   color: Colors.white,
                                 ),
-                                child: const Text(
-                                  '200',
+                                child: Text(
+                                  '$totalVocab',
                                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: amberColor),
                                 ),
                               ),

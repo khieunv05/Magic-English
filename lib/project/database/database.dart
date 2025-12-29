@@ -4,8 +4,10 @@ import 'package:magic_english_project/api_service/apiservice.dart';
 import 'package:magic_english_project/project/dto/category_english.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/core/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:magic_english_project/project/dto/overview_model.dart'; //
 class Database{
   final String _baseUrl = 'https://e90f79743f77.ngrok-free.app';
   Future<String> addUser(String username,String password,String passwordConfirmation)async {
@@ -59,6 +61,16 @@ class Database{
 
 
   }
+  Future<OverviewModel> getOverviewData() async {
+    Uri uri = Uri.parse('$_baseUrl/api/tracking/overview');
+    final response = await ApiService.get(uri);
+
+    if (response.statusCode == 200) {
+      return OverviewModel.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Không thể tải dữ liệu Overview');
+    }
+  }
   Future<User> getUserData()async{
     Uri userDataUri = Uri.parse('$_baseUrl/api/show');
     final responseUserData = await ApiService.get(userDataUri);
@@ -101,8 +113,8 @@ class Database{
 
 
 
-    
-    
+
+
   }
 
   Future<WritingDto> addParagraph(String text) async{

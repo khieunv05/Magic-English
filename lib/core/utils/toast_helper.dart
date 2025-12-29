@@ -9,7 +9,8 @@ void showTopNotification(
   required String message,
   Duration duration = const Duration(seconds: 3),
 }) {
-  final overlay = Overlay.of(context);
+  final overlay = Overlay.of(context, rootOverlay: true);
+  if (overlay == null) return;
   Color iconBg;
   IconData iconData;
   switch (type) {
@@ -105,10 +106,17 @@ void showTopNotification(
     );
   });
 
-  overlay.insert(entry);
-  Future.delayed(duration, () {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     try {
-      entry.remove();
+      overlay.insert(entry);
     } catch (_) {}
+  });
+
+  Future.delayed(duration, () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        entry.remove();
+      } catch (_) {}
+    });
   });
 }
