@@ -7,13 +7,13 @@ import 'package:magic_english_project/api_service/apiservice.dart';
 import 'package:magic_english_project/app/app.dart';
 import 'package:magic_english_project/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:magic_english_project/login.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
+import 'package:magic_english_project/core/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 class Database{
-  final String _baseUrl = 'http://localhost:8000';
+  final String _baseUrl = ApiConfig.baseUrl;
   Future<String?> addUser(String username,String password)async {
     try {
       final response = await http.post(

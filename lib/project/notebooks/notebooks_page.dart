@@ -1,19 +1,100 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/project/base/basescreen.dart';
-import 'package:magic_english_project/project/home/home_page.dart';
-import 'package:magic_english_project/project/pointanderror/historypoint.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/vocab/vocab_page.dart';
 import 'package:magic_english_project/core/utils/popup_helper.dart';
+import 'package:magic_english_project/project/dto/notebook.dart';
+import 'package:magic_english_project/project/notebooks/notebook_api.dart';
 
-class NotebooksPage extends StatelessWidget {
+enum _NotebookFilter { all, favorites }
+
+class NotebooksPage extends StatefulWidget {
   const NotebooksPage({super.key});
 
-  Widget _buildNotebookCard(
-      BuildContext context,
-      String title,
-      int count,
-      ) {
+  @override
+  State<NotebooksPage> createState() => _NotebooksPageState();
+}
+
+class _NotebooksPageState extends State<NotebooksPage> {
+  _NotebookFilter _filter = _NotebookFilter.all;
+  bool _isLoading = true;
+  List<Notebook> _notebooks = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadNotebooks();
+  }
+
+  Future<void> _reloadNotebooks() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final data = await NotebookApi.fetchNotebooks(perPage: 50);
+      if (!mounted) return;
+      setState(() {
+        _notebooks = data;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      showTopNotification(
+        context,
+        type: ToastType.error,
+        title: 'Lỗi',
+        message: e.toString(),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Notebook> get _filteredNotebooks {
+    if (_filter == _NotebookFilter.favorites) {
+      return _notebooks.where((n) => n.isFavorite).toList();
+    }
+    return _notebooks;
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '--/--/----';
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    return '$dd/$mm/${date.year}';
+  }
+
+  Future<void> _toggleFavorite(Notebook notebook) async {
+    final updated = notebook.copyWith(isFavorite: !notebook.isFavorite);
+    setState(() {
+      _notebooks = _notebooks
+          .map((n) => n.id == notebook.id ? updated : n)
+          .toList(growable: false);
+    });
+    try {
+      await NotebookApi.update(
+        notebook: notebook,
+        isFavorite: updated.isFavorite,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // rollback
+      setState(() {
+        _notebooks = _notebooks
+            .map((n) => n.id == notebook.id ? notebook : n)
+            .toList(growable: false);
+      });
+      showTopNotification(
+        context,
+        type: ToastType.error,
+        title: 'Lỗi',
+        message: e.toString(),
+      );
+    }
+  }
+
+  Widget _buildNotebookCard(BuildContext context, Notebook notebook) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -42,7 +123,7 @@ class NotebooksPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            title,
+                            notebook.name,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 14,
@@ -51,7 +132,15 @@ class NotebooksPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Icon(Icons.bookmark_outline, size: 18),
+                        GestureDetector(
+                          onTap: () => _toggleFavorite(notebook),
+                          child: Icon(
+                            notebook.isFavorite
+                                ? Icons.bookmark
+                                : Icons.bookmark_outline,
+                            size: 18,
+                          ),
+                        ),
                         const SizedBox(width: 6),
 
                         // MORE BUTTON
@@ -61,19 +150,33 @@ class NotebooksPage extends StatelessWidget {
                             if (value == 'edit') {
                               _showEditNotebookModal(
                                 context,
-                                oldName: title,
+                                notebook: notebook,
                               );
                             } else if (value == 'delete') {
                               showDeleteConfirm(
                                 context: context,
-                                notebookName: title,
-                                onConfirm: () {
-                                  showTopNotification(
-                                    context,
-                                    type: ToastType.success,
-                                    title: 'Đã xóa',
-                                    message: 'Sổ tay "$title" đã được xóa',
-                                  );
+                                notebookName: notebook.name,
+                                onConfirm: () async {
+                                  try {
+                                    await NotebookApi.delete(id: notebook.id);
+                                    if (!mounted) return;
+                                    showTopNotification(
+                                      context,
+                                      type: ToastType.success,
+                                      title: 'Đã xóa',
+                                      message:
+                                          'Sổ tay "${notebook.name}" đã được xóa',
+                                    );
+                                    await _reloadNotebooks();
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    showTopNotification(
+                                      context,
+                                      type: ToastType.error,
+                                      title: 'Lỗi',
+                                      message: e.toString(),
+                                    );
+                                  }
                                 },
                               );
                             }
@@ -109,7 +212,7 @@ class NotebooksPage extends StatelessWidget {
 
                     const SizedBox(height: 6),
                     Text(
-                      '$count',
+                      '${notebook.vocabulariesCount}',
                       style: const TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
@@ -119,8 +222,8 @@ class NotebooksPage extends StatelessWidget {
                         style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Ngày tạo: 21/12/2025',
+                    Text(
+                      'Ngày tạo: ${_formatDate(notebook.createdAt)}',
                       style: TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
@@ -132,10 +235,6 @@ class NotebooksPage extends StatelessWidget {
       ),
     );
   }
-
-
-
-
 
 
   void _showCreateNotebookModal(BuildContext context) {
@@ -237,11 +336,32 @@ class NotebooksPage extends StatelessWidget {
                               onPressed: isLoading ? null : () async {
                                 if (!(_formKey.currentState?.validate() ?? false)) return;
                                 setState(() { isLoading = true; });
-                                await Future.delayed(const Duration(milliseconds: 600));
-                                Navigator.of(ctx).pop();
-                                // show top notification instead of snackbar
-                                showTopNotification(parentContext, type: ToastType.success, title: 'Thành công', message: 'Tạo mới sổ tay "' + name + '" thành công');
-                                setState(() { isLoading = false; });
+                                try {
+                                  await NotebookApi.create(
+                                    name: name.trim(),
+                                    description: '',
+                                    isFavorite: false,
+                                  );
+                                  if (!mounted) return;
+                                  Navigator.of(ctx).pop();
+                                  showTopNotification(
+                                    parentContext,
+                                    type: ToastType.success,
+                                    title: 'Thành công',
+                                    message: 'Tạo mới sổ tay "$name" thành công',
+                                  );
+                                  await _reloadNotebooks();
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  showTopNotification(
+                                    parentContext,
+                                    type: ToastType.error,
+                                    title: 'Lỗi',
+                                    message: e.toString(),
+                                  );
+                                } finally {
+                                  setState(() { isLoading = false; });
+                                }
                               },
                               child: isLoading
                                   ? const SizedBox(
@@ -274,10 +394,10 @@ class NotebooksPage extends StatelessWidget {
 
   void _showEditNotebookModal(
       BuildContext context, {
-        required String oldName,
+        required Notebook notebook,
       }) {
     final formKey = GlobalKey<FormState>();
-    String name = oldName;
+    String name = notebook.name;
 
     showModalBottomSheet(
       context: context,
@@ -298,6 +418,7 @@ class NotebooksPage extends StatelessWidget {
           ),
           child: StatefulBuilder(
             builder: (context, setState) {
+              bool isLoading = false;
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +442,7 @@ class NotebooksPage extends StatelessWidget {
                   Form(
                     key: formKey,
                     child: TextFormField(
-                      initialValue: oldName,
+                      initialValue: notebook.name,
                       decoration: const InputDecoration(
                         hintText: 'Nhập tên sổ tay',
                         border: OutlineInputBorder(),
@@ -339,16 +460,41 @@ class NotebooksPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (!formKey.currentState!.validate()) return;
-                        Navigator.pop(ctx);
-                        showTopNotification(
-                          context,
-                          type: ToastType.success,
-                          title: 'Thành công',
-                          message: 'Đã cập nhật sổ tay "$name"',
-                        );
-                      },
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              if (!formKey.currentState!.validate()) return;
+                              setState(() {
+                                isLoading = true;
+                              });
+                              try {
+                                await NotebookApi.update(
+                                  notebook: notebook,
+                                  name: name.trim(),
+                                );
+                                if (!mounted) return;
+                                Navigator.pop(ctx);
+                                showTopNotification(
+                                  context,
+                                  type: ToastType.success,
+                                  title: 'Thành công',
+                                  message: 'Đã cập nhật sổ tay "$name"',
+                                );
+                                await _reloadNotebooks();
+                              } catch (e) {
+                                if (!mounted) return;
+                                showTopNotification(
+                                  context,
+                                  type: ToastType.error,
+                                  title: 'Lỗi',
+                                  message: e.toString(),
+                                );
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF3A94E7),
                         minimumSize: const Size.fromHeight(48),
@@ -356,7 +502,16 @@ class NotebooksPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(24),
                         ),
                       ),
-                      child: const Text('Lưu'),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Lưu'),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -391,64 +546,67 @@ class NotebooksPage extends StatelessWidget {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _filter = _NotebookFilter.all;
+                      });
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3A94E7),
                     ),
                     child: const Text('Tất cả',style: TextStyle(color: Colors.white),),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom(
-                    backgroundColor:  Colors.white,
-                  ), child: const Text('Sổ tay yêu thích',style:TextStyle(color:Colors.black) )),
+                  ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _filter = _NotebookFilter.favorites;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _filter == _NotebookFilter.favorites
+                            ? const Color(0xFF3A94E7)
+                            : Colors.white,
+                      ),
+                      child: Text(
+                        'Sổ tay yêu thích',
+                        style: TextStyle(
+                          color: _filter == _NotebookFilter.favorites
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      )),
                 ],
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: GridView.count(
-                  padding: const EdgeInsets.only(bottom: 120),
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 3/3.5,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay IT', 45),
-                    ),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay Marketing', 131),
-                    ),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabPage(notebookName: "Sổ tay IT"),
-                          ),
-                        );
-                      },
-                      child: _buildNotebookCard(context, 'Sổ tay NET', 31),
-                    ),
-                  ],
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_filteredNotebooks.isEmpty
+                        ? const Center(child: Text('Chưa có sổ tay'))
+                        : GridView.count(
+                            padding: const EdgeInsets.only(bottom: 120),
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 3 / 3.5,
+                            children: _filteredNotebooks.map((notebook) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VocabPage(
+                                        notebookName: notebook.name,
+                                        notebookId: notebook.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: _buildNotebookCard(context, notebook),
+                              );
+                            }).toList(),
+                          )),
               ),
             ],
           ),
