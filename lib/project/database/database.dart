@@ -7,7 +7,7 @@ import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 class Database{
-  final String _baseUrl = 'http://localhost:8000';
+  final String _baseUrl = 'https://e90f79743f77.ngrok-free.app';
   Future<String> addUser(String username,String password,String passwordConfirmation)async {
       final response = await http.post(
           Uri.parse('$_baseUrl/api/register'),
