@@ -21,6 +21,7 @@ class NotebookCollection extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'is_favorite' => (bool) $this->is_favorite,
+            'vocabularies_count' => (int) ($this->vocabularies_count ?? 0),
             'user' => new UserResource($this->whenLoaded('user')),
 
             'created_at' => Carbon::parse($this->created_at)->format('d-m-Y H:i:s'),
