@@ -120,7 +120,7 @@ class HomeScreenContent extends StatefulWidget {
 class _HomeScreenContentState extends State<HomeScreenContent> {
    Map<String, double>? categoryData;
    CategoryEnglish? categoryEnglish;
-   Map<String, double>? cefrData;
+   Map<String, int>? cefrData;
   @override
   void initState() {
     super.initState();
@@ -136,7 +136,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     });
   }
   String _selectedBarLabel = '';
-  double _selectedBarValue = 0;
+  int _selectedBarValue = 0;
   final int totalStudyDays = 200;
   // final int currentFireStreak = 12;
 
@@ -498,7 +498,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  Widget _buildBarChart(BuildContext context, Map<String, double> data) {
+  Widget _buildBarChart(BuildContext context, Map<String, int> data) {
     double maxValue = 60;
     const Color defaultColor = Color(0xFFE0E0E0);
     final Color highlightColor = Theme.of(context).primaryColor;
@@ -524,7 +524,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: data.entries.map((entry) {
           String label = entry.key;
-          double value = entry.value;
+          int value = entry.value;
 
           double normalizedHeight = (value / maxValue) * maxBarPixelHeight;
 

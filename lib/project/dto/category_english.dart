@@ -1,15 +1,15 @@
 class CategoryEnglish {
-  double noun= 0;
-  double adj= 0;
-  double verb = 0;
-  double adv = 0;
-  double A1;
-  double A2;
-  double B1;
-  double B2;
-  double C1;
-  double C2;
-  double totalVocab;
+  int noun= 0;
+  int adj= 0;
+  int verb = 0;
+  int adv = 0;
+  int A1;
+  int A2;
+  int B1;
+  int B2;
+  int C1;
+  int C2;
+  int totalVocab;
 
 
   CategoryEnglish({this.noun = 0, this.adj = 0, this.verb = 0, this.adv = 0,
