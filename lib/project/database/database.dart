@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_english_project/project/dto/overview_model.dart'; //
 class Database{
-  final String _baseUrl = 'https://kristal-nondichotomous-conclusionally.ngrok-free.dev';
+  final String _baseUrl = ApiConfig.baseUrl;
   Future<String> addUser(String username,String password,String passwordConfirmation)async {
       final response = await http.post(
           Uri.parse('$_baseUrl/api/register'),
