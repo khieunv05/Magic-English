@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:magic_english_project/app/app_router.dart';
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class App extends StatelessWidget {
   App({super.key});
 
@@ -13,6 +13,7 @@ class App extends StatelessWidget {
       theme: AppTheme.appTheme,
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.initialRoute,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

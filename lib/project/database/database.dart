@@ -9,13 +9,14 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_english_project/project/dto/overview_model.dart'; //
 class Database{
-  final String _baseUrl = 'https://e90f79743f77.ngrok-free.app';
+  final String _baseUrl = ApiConfig.baseUrl;
   Future<String> addUser(String username,String password,String passwordConfirmation)async {
       final response = await http.post(
           Uri.parse('$_baseUrl/api/register'),
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
           },
           body: jsonEncode({
             "email": username,
@@ -37,7 +38,9 @@ class Database{
       final response = await http.post(
         Uri.parse('$_baseUrl/api/login'),
         headers: {
-          "Content-Type":"application/json"
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: jsonEncode({
           "email":username,

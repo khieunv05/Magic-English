@@ -34,10 +34,10 @@ class MainAppWrapper extends StatefulWidget {
 class _MainAppWrapperState extends State<MainAppWrapper> {
    int selectedIndex = 0;
   final navigatorStates = [
-    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_0'),
-    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_1'),
-    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_2'),
-    GlobalKey<NavigatorState>(debugLabel: 'tabNavigator_3')
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>()
   ];
   final tabList =  [
     const HomeScreenContent(),

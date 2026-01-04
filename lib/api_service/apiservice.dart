@@ -9,7 +9,9 @@ class ApiService {
     final token = prefs.getString('accessToken');
     Map<String,String> header = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      // ngrok free domains may return an interstitial warning HTML page unless this header is present.
+      'ngrok-skip-browser-warning': 'true',
     };
     if(token != null && token.isNotEmpty){
       header['Authorization'] = 'Bearer $token';
@@ -17,6 +19,12 @@ class ApiService {
     return header;
   }
   static Future<http.Response> _handleResponse(http.Response response)async{
+    final contentType = response.headers['content-type'] ?? '';
+    if (contentType.contains('text/html') || response.body.trimLeft().startsWith('<!DOCTYPE html')) {
+      throw Exception(
+        'Server trả về HTML (có thể là trang cảnh báo ngrok/đường dẫn sai). Status: ${response.statusCode}',
+      );
+    }
     if(response.statusCode == 401){
       final prefs = SharedPreferencesData.sharedPreferences;
       await prefs.clear();
