@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:magic_english_project/project/base/shared_preferences_data.dart';
 import 'package:magic_english_project/project/login/signin.dart';
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
+import 'package:magic_english_project/services/shared_preferences_service.dart';
 import 'package:provider/provider.dart';
 
 class LogoutDialog {
@@ -41,7 +41,7 @@ class LogoutDialog {
             ElevatedButton(
               onPressed: () async{
                 Navigator.of(context).pop();
-                final prefs = SharedPreferencesData.sharedPreferences;
+                final prefs = SharedPreferencesService.instance;
                 await prefs.clear();
                 if(!context.mounted){
                   return;

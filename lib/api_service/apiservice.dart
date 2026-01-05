@@ -1,19 +1,19 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/app/app.dart';
-import 'package:magic_english_project/project/base/shared_preferences_data.dart';
 import 'package:magic_english_project/project/login/signin.dart';
+import 'package:magic_english_project/services/shared_preferences_service.dart';
 class ApiService {
   static Future<Map<String,String>> _getHeader() async{
-    final prefs = SharedPreferencesData.sharedPreferences;
-    final token = prefs.getString('accessToken');
+    final prefs = SharedPreferencesService.instance;
+    final token = prefs.getAccessToken();
     Map<String,String> header = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      // ngrok free domains may return an interstitial warning HTML page unless this header is present.
       'ngrok-skip-browser-warning': 'true',
+
     };
-    if(token != null && token.isNotEmpty){
+    if(token.isNotEmpty){
       header['Authorization'] = 'Bearer $token';
     }
     return header;
@@ -26,7 +26,7 @@ class ApiService {
       );
     }
     if(response.statusCode == 401){
-      final prefs = SharedPreferencesData.sharedPreferences;
+      final prefs = SharedPreferencesService.instance;
       await prefs.clear();
       navigatorKey.currentState!.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context){

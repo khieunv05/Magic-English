@@ -4,6 +4,7 @@ import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/user.dart';
 import 'package:magic_english_project/project/home/home_page.dart';
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
+import 'package:magic_english_project/services/shared_preferences_service.dart';
 import 'package:provider/provider.dart';
 import '../provider/userprovider.dart';
 import '../theme/apptheme.dart';
@@ -17,6 +18,8 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   late String _username;
   late String _password;
   bool? checkBoxSaveAcoount = false;
@@ -29,6 +32,14 @@ class _SignInState extends State<SignIn> {
     WidgetsBinding.instance.addPostFrameCallback((_){
       context.read<ParagraphProvider>().clearData();
     });
+    final pref = SharedPreferencesService.instance;
+    checkBoxSaveAcoount = pref.getRememberMe();
+    if(checkBoxSaveAcoount == true){
+      setState(() {
+        _usernameController.text = pref.getEmail();
+        _passwordController.text = pref.getPassword();
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -91,6 +102,7 @@ class _SignInState extends State<SignIn> {
     return Form(key: _formKey,child:
     Column(children: [
       TextFormField(
+        controller: _usernameController,
         keyboardType: TextInputType.emailAddress,
         decoration: const InputDecoration(
             hintText: 'Email',
@@ -111,6 +123,7 @@ class _SignInState extends State<SignIn> {
       ),
       const SizedBox(height: 12,),
       TextFormField(
+        controller: _passwordController,
         obscureText: (canViewPassword == true) ? false : true,
         decoration: InputDecoration(
             hintText: 'Mật khẩu',
@@ -150,6 +163,8 @@ class _SignInState extends State<SignIn> {
     try {
       Database db = Database();
       User user = await db.login(_username,_password);
+      final pref = SharedPreferencesService.instance;
+      await pref.setRememberMe(checkBoxSaveAcoount!,_username,_password);
       if (!mounted) return;
       context.read<UserProvider>().setUser(user);
       Navigator.pushReplacement(

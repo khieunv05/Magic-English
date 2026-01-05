@@ -42,20 +42,7 @@ class BaseLoginScreen extends StatelessWidget {
               ),
               bodyContent,
               const SizedBox(height: 16,),
-              Text('Hoặc tiếp tục với',style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,),
-              const SizedBox(height: 16,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  CircleAvatar(backgroundColor: Colors.white,radius: 20,
-                  child: Padding(padding: const EdgeInsets.all(8),
-                  child: Image.asset('assets/images/google.png'),),),
-                  CircleAvatar(backgroundColor: Colors.white,radius: 20,
-                    child: Padding(padding: const EdgeInsets.all(8),
-                      child: Image.asset('assets/images/iphone.png'),),),
-                ],
-              ),
+  
               const SizedBox(height: 16,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

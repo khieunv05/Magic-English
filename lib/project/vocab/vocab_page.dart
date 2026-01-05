@@ -3,6 +3,8 @@ import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/vocab/flash_card_page.dart';
 import 'package:magic_english_project/project/dto/vocabulary.dart';
 import 'package:magic_english_project/project/vocab/vocab_api.dart';
+import 'package:provider/provider.dart';
+import 'package:magic_english_project/project/provider/home_page_provider.dart';
 
 enum _VocabMenuAction { edit, delete }
 
@@ -23,6 +25,14 @@ class VocabPage extends StatefulWidget {
 class _VocabPageState extends State<VocabPage> {
   bool _isLoading = true;
   List<Vocabulary> _items = const [];
+  bool _hasChangedCount = false;
+
+  void _popWithResult() {
+    Navigator.pop(context, {
+      'changed': _hasChangedCount,
+      'count': _items.length,
+    });
+  }
 
   static const List<String> _cefrOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -438,6 +448,7 @@ class _VocabPageState extends State<VocabPage> {
                                         example: example,
                                         cefrLevel: cefr,
                                       );
+                                      await context.read<HomePageProvider>().initData();
                                     } else {
                                       await VocabApi.createInNotebook(
                                         notebookId: widget.notebookId,
@@ -448,6 +459,8 @@ class _VocabPageState extends State<VocabPage> {
                                         example: example,
                                         cefrLevel: cefr,
                                       );
+                                      _hasChangedCount = true;
+                                      await context.read<HomePageProvider>().initData();
                                     }
 
                                     if (!mounted) return;
@@ -671,6 +684,8 @@ class _VocabPageState extends State<VocabPage> {
                 try {
                   await VocabApi.delete(id: vocab.id);
                   if (!mounted) return;
+                  _hasChangedCount = true;
+                  await context.read<HomePageProvider>().initData();
                   showTopNotification(
                     context,
                     type: ToastType.success,
@@ -708,64 +723,71 @@ class _VocabPageState extends State<VocabPage> {
     // padding bottom để list không bị FAB che (nếu bạn có bottom nav thì tăng thêm)
     final safeBottom = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Sổ tay của bạn/${widget.notebookName}",
-          style: const TextStyle(fontWeight: FontWeight.w600),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _popWithResult();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            "Sổ tay của bạn/${widget.notebookName}",
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          leading: IconButton(
+            onPressed: _popWithResult,
+            icon: const Icon(Icons.arrow_back),
+          ),
+          actions: const [
+            Icon(Icons.settings_outlined),
+            SizedBox(width: 12),
+            Icon(Icons.search),
+            SizedBox(width: 12),
+          ],
         ),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : (_items.isEmpty
+                ? Center(
+                    child: Text(
+                      'Sổ tay ${widget.notebookName} chưa có từ vựng nào.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _reload,
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 96 + safeBottom),
+                      children: _items.map((v) {
+                        return _buildVocabCard(
+                          context,
+                          title: v.word,
+                          meaning: v.meaning.isEmpty ? '—' : v.meaning,
+                          phonetic: v.ipa.isEmpty ? '—' : v.ipa,
+                          type: v.partOfSpeech.isEmpty ? '—' : v.partOfSpeech,
+                          level: v.cefrLevel.isEmpty ? '—' : v.cefrLevel,
+                          example: v.example.isEmpty ? '—' : v.example,
+                          onEdit: () => _showEditVocabModal(context, vocab: v),
+                          onDelete: () => _showDeleteConfirm(context, vocab: v),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FlashCardPage(
+                                notebookId: widget.notebookId,
+                                initialVocabId: v.id,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  )),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF3A94E7),
+          onPressed: () => _showVocabModal(context),
+          child: const Icon(Icons.add, size: 28, color: Colors.white),
         ),
-        actions: const [
-          Icon(Icons.settings_outlined),
-          SizedBox(width: 12),
-          Icon(Icons.search),
-          SizedBox(width: 12),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : (_items.isEmpty
-          ? Center(
-        child: Text(
-          'Sổ tay ${widget.notebookName} chưa có từ vựng nào.',
-          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-        ),
-      )
-          : RefreshIndicator(
-        onRefresh: _reload,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 96 + safeBottom),
-          children: _items.map((v) {
-            return _buildVocabCard(
-              context,
-              title: v.word,
-              meaning: v.meaning.isEmpty ? '—' : v.meaning,
-              phonetic: v.ipa.isEmpty ? '—' : v.ipa,
-              type: v.partOfSpeech.isEmpty ? '—' : v.partOfSpeech,
-              level: v.cefrLevel.isEmpty ? '—' : v.cefrLevel,
-              example: v.example.isEmpty ? '—' : v.example,
-              onEdit: () => _showEditVocabModal(context, vocab: v),
-              onDelete: () => _showDeleteConfirm(context, vocab: v),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => FlashCardPage(
-                    notebookId: widget.notebookId,
-                    initialVocabId: v.id,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      )),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF3A94E7),
-        onPressed: () => _showVocabModal(context),
-        child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),
     );
   }

@@ -234,9 +234,11 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   Widget build(BuildContext context) {
     final provider = context.watch<HomePageProvider>();
     final overview = provider.overviewData;
-    int vocabFromApi = overview?.result?.totalVocabularyLearned ?? 0;
+    categoryEnglish = provider.categoryEnglish;
+    // NOTE: `total_vocabulary_learned` từ /tracking/overview có thể không đổi khi bạn chỉ thêm/xóa từ.
+    // `totalVocab` từ /tracking/visualization phản ánh tổng số từ hiện có theo từ loại.
+    int vocabFromApi = categoryEnglish?.totalVocab ?? overview?.result?.totalVocabularyLearned ?? 0;
     int streakFromApi = overview?.result?.streak.streak ?? 0;
-    categoryEnglish = context.watch<HomePageProvider>().categoryEnglish;
     categoryData = {
       'Danh từ': (categoryEnglish?.noun ?? 1)/(categoryEnglish?.totalVocab ?? 1) ,
       'Tính từ': (categoryEnglish?.adj ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
@@ -244,12 +246,12 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       'Còn lại':(categoryEnglish?.adv ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
     };
    cefrData = {
-     'A1':(categoryEnglish?.A1 ?? 1),
-   'A2':(categoryEnglish?.A2 ?? 1),
-   'B1':(categoryEnglish?.B1 ?? 1),
-   'B2':(categoryEnglish?.B2 ?? 1),
-   'C1':(categoryEnglish?.C1 ?? 1),
-   'C2':(categoryEnglish?.C2 ?? 1),
+     'A1': (categoryEnglish?.A1 ?? 1).toDouble(),
+     'A2': (categoryEnglish?.A2 ?? 1).toDouble(),
+     'B1': (categoryEnglish?.B1 ?? 1).toDouble(),
+     'B2': (categoryEnglish?.B2 ?? 1).toDouble(),
+     'C1': (categoryEnglish?.C1 ?? 1).toDouble(),
+     'C2': (categoryEnglish?.C2 ?? 1).toDouble(),
    };
     return _buildBody(context, vocabFromApi, streakFromApi);
   }
@@ -305,12 +307,12 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         'Còn lại': 0.25,
       };
     cefrData ??=  {
-      'A1': 30,
-      'A2': 18,
-      'B1': 27,
-      'B2': 60,
-      'C1': 42,
-      'C2': 23,
+      'A1': 30.0,
+      'A2': 18.0,
+      'B1': 27.0,
+      'B2': 60.0,
+      'C1': 42.0,
+      'C2': 23.0,
     };
     return Scaffold(
       appBar: buildCustomAppBar(
