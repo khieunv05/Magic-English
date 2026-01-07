@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:magic_english_project/core/utils/toast_helper.dart';
 import 'package:magic_english_project/project/dto/writingdto.dart';
 import 'package:magic_english_project/project/pointanderror/errorandsuggest.dart';
+import 'package:magic_english_project/project/provider/home_page_provider.dart';
 import 'package:magic_english_project/project/provider/paragraphprovider.dart';
 import 'package:magic_english_project/project/theme/apptheme.dart';
 import 'package:provider/provider.dart';
@@ -72,6 +73,11 @@ class _WritingParagraphState extends State<WritingParagraph> {
                   try {
                     WritingDto? writingDto = await context.read<
                         ParagraphProvider>().addData(_controller.text);
+
+                    if(!context.mounted){
+                      return;
+                    }
+                    await context.read<HomePageProvider>().reloadActivities();
                     if(!context.mounted){
                       return;
                     }

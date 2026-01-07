@@ -214,11 +214,13 @@ class _NotebooksPageState extends State<NotebooksPage> {
                     ),
 
                     const SizedBox(height: 6),
-                    Text(
-                      '${notebook.vocabulariesCount}',
-                      style: const TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: Text(
+                        '${notebook.vocabulariesCount}',
+                        style: const TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const Text('Từ vựng',

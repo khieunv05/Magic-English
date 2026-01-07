@@ -58,4 +58,36 @@ class ApiService {
     final response = await http.delete(uri,headers: header);
     return _handleResponse(response);
   }
+
+  static Future<http.Response> multipartPost(
+    Uri uri, {
+    required Map<String, String> fields,
+    String? fileField,
+    List<int>? fileBytes,
+    String? filename,
+  }) async {
+    final header = await _getHeader();
+
+    // Let MultipartRequest set the content-type with boundary.
+    final multipartHeaders = Map<String, String>.from(header);
+    multipartHeaders.remove('Content-Type');
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(multipartHeaders);
+    request.fields.addAll(fields);
+
+    if (fileField != null && fileBytes != null && fileBytes.isNotEmpty) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fileField,
+          fileBytes,
+          filename: (filename == null || filename.trim().isEmpty) ? 'avatar.jpg' : filename,
+        ),
+      );
+    }
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _handleResponse(response);
+  }
 }
