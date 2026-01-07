@@ -98,7 +98,7 @@ class GeminiClient
   {
     return <<<PROMPT
 You are an English writing evaluator. Analyze the given English sentence(s) for grammar, spelling, and style.
-Return STRICT JSON only (no extra text, no explanations), with this shape:
+Return STRICT JSON only (no extra text, no explanations,only answer issues in Vietnamese the rest is English), with this shape:
 {
   "score": <integer 0-{$scaleMax}>,
   "issues": [
