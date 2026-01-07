@@ -3,6 +3,7 @@
 namespace App\Services\Tracking;
 
 use App\Models\LearningActivity;
+use App\Models\User;
 use App\Models\Vocabulary;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +61,15 @@ class TrackingService
 
   public function getOverview(int $userId): array
   {
+    $user = User::query()->select(['id', 'created_at'])->find($userId);
+    $totalDaysJoined = null;
+    if ($user?->created_at) {
+      $joinedAt = Carbon::parse($user->created_at)->startOfDay();
+      $today = Carbon::today();
+      // Inclusive count: if joined today => 1 day
+      $totalDaysJoined = $joinedAt->diffInDays($today) + 1;
+    }
+
     $totalVocab = Vocabulary::query()->where('user_id', $userId)->count();
     $streakInfo = $this->getStreak($userId);
     $streak = $streakInfo['streak'];
@@ -80,6 +90,7 @@ class TrackingService
     }
 
     return [
+      'total_days_joined' => $totalDaysJoined,
       'total_vocabulary_learned' => $totalVocab,
       'streak' => $streakInfo,
       'badges' => $badges,

@@ -92,9 +92,16 @@ class UserController extends \App\Http\Controllers\Controller
             }
         }
 
-        // Image upload
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('avatars', 'public');
+        // Avatar upload (accept both `avatar` and legacy `image`)
+        $avatarFile = null;
+        if ($request->hasFile('avatar')) {
+            $avatarFile = $request->file('avatar');
+        } elseif ($request->hasFile('image')) {
+            $avatarFile = $request->file('image');
+        }
+
+        if ($avatarFile) {
+            $path = $avatarFile->store('avatars', 'public');
             $updates['image'] = 'storage/' . $path;
         }
 
