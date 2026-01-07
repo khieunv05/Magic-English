@@ -8,7 +8,7 @@ import 'package:magic_english_project/project/notebooks/notebooks_page.dart';
 import 'package:magic_english_project/navigation/instruction_modal.dart';
 import 'package:magic_english_project/navigation/profile_screen.dart';
 import 'package:magic_english_project/project/provider/home_page_provider.dart';
-import 'package:magic_english_project/project/provider/paragraphprovider.dart';
+import 'package:magic_english_project/project/dto/tracking_activity.dart';
 import 'dart:math';
 
 import 'package:magic_english_project/project/theme/apptheme.dart';
@@ -230,6 +230,247 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
+  String _activityTypeLabel(String type) {
+    switch (type) {
+      case 'add_vocab':
+        return 'Thêm từ vựng';
+      case 'delete_vocab':
+        return 'Xóa từ vựng';
+      case 'update_vocab':
+        return 'Sửa từ vựng';
+      case 'grammar_check':
+        return 'Kiểm tra ngữ pháp';
+      default:
+        return type;
+    }
+  }
+
+  IconData _activityTypeIcon(String type) {
+    switch (type) {
+      case 'add_vocab':
+        return Icons.add_circle_outline;
+      case 'delete_vocab':
+        return Icons.remove_circle_outline;
+      case 'update_vocab':
+        return Icons.edit_outlined;
+      case 'grammar_check':
+        return Icons.spellcheck;
+      default:
+        return Icons.history;
+    }
+  }
+
+  String _formatActivityDate(DateTime? dt) {
+    if (dt == null) return '';
+    final local = dt.toLocal();
+    final dd = local.day.toString().padLeft(2, '0');
+    final mm = local.month.toString().padLeft(2, '0');
+    final yyyy = local.year.toString();
+    final hh = local.hour.toString().padLeft(2, '0');
+    final min = local.minute.toString().padLeft(2, '0');
+    return '$dd/$mm/$yyyy $hh:$min';
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  void _showActivityDetailDialog(BuildContext context, TrackingActivity a) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        final when = a.createdAt ?? a.activityDate;
+
+        final notebookName = a.notebook?.name;
+        final vocab = a.vocabulary;
+        final grammar = a.grammarCheck;
+
+        return AlertDialog(
+          title: Text(_activityTypeLabel(a.type)),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_formatActivityDate(when).isNotEmpty)
+                    _detailRow('Thời gian', _formatActivityDate(when)),
+                  if (notebookName != null && notebookName.trim().isNotEmpty)
+                    _detailRow('Sổ tay', notebookName),
+                  if (a.notebookId != null && (notebookName == null || notebookName.trim().isEmpty))
+                    _detailRow('Notebook ID', a.notebookId.toString()),
+                  _detailRow('Related ID', a.relatedId.toString()),
+                  const Divider(height: 16),
+
+                  if (vocab != null) ...[
+                    _detailRow('Từ', vocab.word),
+                    if (vocab.meaning.trim().isNotEmpty) _detailRow('Nghĩa', vocab.meaning),
+                    if (vocab.partOfSpeech.trim().isNotEmpty) _detailRow('Từ loại', vocab.partOfSpeech),
+                    if (vocab.cefrLevel.trim().isNotEmpty) _detailRow('CEFR', vocab.cefrLevel),
+                  ],
+
+                  if (grammar != null) ...[
+                    _detailRow('Score', (grammar.score ?? '').toString()),
+                    if (grammar.originalText.trim().isNotEmpty) ...[
+                      const Text(
+                        'Văn bản gốc',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 6),
+                      SelectableText(grammar.originalText),
+                      const SizedBox(height: 12),
+                    ],
+                    if (grammar.errors.isNotEmpty) ...[
+                      Text(
+                        'Lỗi (${grammar.errorsCount})',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 6),
+                      ...grammar.errors.map((e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text('• $e'),
+                          )),
+                      const SizedBox(height: 12),
+                    ],
+                    if (grammar.suggestions.isNotEmpty) ...[
+                      Text(
+                        'Gợi ý (${grammar.suggestionsCount})',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 6),
+                      ...grammar.suggestions.map((s) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text('• $s'),
+                          )),
+                    ],
+                  ],
+
+                  if (vocab == null && grammar == null)
+                    const Text('Không có thêm dữ liệu chi tiết cho hoạt động này.'),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Đóng'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showActivitiesDialog(BuildContext context) {
+    final provider = context.read<HomePageProvider>();
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          title: const Text('Hoạt động'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Consumer<HomePageProvider>(
+              builder: (_, p, __) {
+                final items = p.activities?.items ?? const <TrackingActivity>[];
+                if (items.isEmpty) {
+                  return const Text('Chưa có hoạt động nào.');
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const Divider(height: 12),
+                  itemBuilder: (_, index) {
+                    final a = items[index];
+                    final when = a.createdAt ?? a.activityDate;
+
+                    final subtitleParts = <String>[];
+                    if (a.notebook?.name != null && a.notebook!.name.trim().isNotEmpty) {
+                      subtitleParts.add(a.notebook!.name);
+                    } else if (a.notebookId != null) {
+                      subtitleParts.add('Notebook #${a.notebookId}');
+                    }
+
+                    if (a.vocabulary != null) {
+                      final v = a.vocabulary!;
+                      final vocabDesc = [
+                        if (v.word.trim().isNotEmpty) v.word,
+                        if (v.partOfSpeech.trim().isNotEmpty) v.partOfSpeech,
+                        if (v.cefrLevel.trim().isNotEmpty) v.cefrLevel,
+                      ].where((s) => s.trim().isNotEmpty).join(' • ');
+                      if (vocabDesc.isNotEmpty) subtitleParts.add(vocabDesc);
+                    }
+
+                    if (a.grammarCheck != null) {
+                      final g = a.grammarCheck!;
+                      subtitleParts.add('Score: ${g.score ?? ''} • Lỗi: ${g.errorsCount}');
+                    }
+
+                    final dtStr = _formatActivityDate(when);
+                    if (dtStr.isNotEmpty) subtitleParts.add(dtStr);
+
+                    return ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        _activityTypeIcon(a.type),
+                        color: AppTheme.appTheme.primaryColor,
+                      ),
+                      title: Text(_activityTypeLabel(a.type)),
+                      subtitle: Text(
+                        subtitleParts.join(' • '),
+                      ),
+                      onTap: () => _showActivityDetailDialog(context, a),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await provider.reloadActivities();
+                } catch (e) {
+                  if (!context.mounted) return;
+                  showTopNotification(
+                    context,
+                    type: ToastType.error,
+                    title: 'Lỗi',
+                    message: e.toString(),
+                  );
+                }
+              },
+              child: const Text('Làm mới'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Đóng'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HomePageProvider>();
@@ -239,21 +480,24 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     // `totalVocab` từ /tracking/visualization phản ánh tổng số từ hiện có theo từ loại.
     int vocabFromApi = categoryEnglish?.totalVocab ?? overview?.result?.totalVocabularyLearned ?? 0;
     int streakFromApi = overview?.result?.streak.streak ?? 0;
+    final totalDaysJoined = overview?.result?.totalDaysJoined ?? 0;
+    final total = categoryEnglish?.totalVocab ?? 0;
+    final denom = total > 0 ? total.toDouble() : 1.0;
     categoryData = {
-      'Danh từ': (categoryEnglish?.noun ?? 1)/(categoryEnglish?.totalVocab ?? 1) ,
-      'Tính từ': (categoryEnglish?.adj ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
-      'Động từ':(categoryEnglish?.verb ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
-      'Còn lại':(categoryEnglish?.adv ?? 1)/(categoryEnglish?.totalVocab ?? 1)  ,
+      'Danh từ': (categoryEnglish?.noun ?? 0) / denom,
+      'Tính từ': (categoryEnglish?.adj ?? 0) / denom,
+      'Động từ': (categoryEnglish?.verb ?? 0) / denom,
+      'Còn lại': (categoryEnglish?.adv ?? 0) / denom,
     };
    cefrData = {
-     'A1': (categoryEnglish?.A1 ?? 1).toDouble(),
-     'A2': (categoryEnglish?.A2 ?? 1).toDouble(),
-     'B1': (categoryEnglish?.B1 ?? 1).toDouble(),
-     'B2': (categoryEnglish?.B2 ?? 1).toDouble(),
-     'C1': (categoryEnglish?.C1 ?? 1).toDouble(),
-     'C2': (categoryEnglish?.C2 ?? 1).toDouble(),
+     'A1': (categoryEnglish?.A1 ?? 0).toDouble(),
+     'A2': (categoryEnglish?.A2 ?? 0).toDouble(),
+     'B1': (categoryEnglish?.B1 ?? 0).toDouble(),
+     'B2': (categoryEnglish?.B2 ?? 0).toDouble(),
+     'C1': (categoryEnglish?.C1 ?? 0).toDouble(),
+     'C2': (categoryEnglish?.C2 ?? 0).toDouble(),
    };
-    return _buildBody(context, vocabFromApi, streakFromApi);
+    return _buildBody(context, vocabFromApi, streakFromApi, totalDaysJoined);
   }
 
 
@@ -265,9 +509,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
 
      return PreferredSize(
-       preferredSize: const Size.fromHeight(80.0),
+         preferredSize: const Size.fromHeight(64.0),
        child: Container(
-         padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 8),
+           padding: const EdgeInsets.only(top: 10, left: 16, right: 16, bottom: 4),
          color: Colors.white,
          child: Row(
            mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -290,16 +534,22 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                  isFire: true,
                  tooltipText: fireTooltip
              ),
-             const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+               IconButton(
+               onPressed: () => _showActivitiesDialog(context),
+                 padding: EdgeInsets.zero,
+                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                 visualDensity: VisualDensity.compact,
+               icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+             ),
            ],
          ),
        ),
      );
    }
-   Widget _buildBody(BuildContext context, int totalVocab, int streakCount){
+  Widget _buildBody(BuildContext context, int totalVocab, int streakCount, int totalDaysJoined){
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
-    const int defaultStudyDays = 200;
+   const int defaultStudyDays = 0;
     categoryData ??= {
         'Danh từ': 0.25,
         'Tính từ': 0.25,
@@ -318,7 +568,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       appBar: buildCustomAppBar(
         context,
         streak: streakCount,
-        totalStudyDays: defaultStudyDays,
+        totalStudyDays: totalDaysJoined > 0 ? totalDaysJoined : defaultStudyDays,
       ),
         body: SingleChildScrollView(
             child: Column(
