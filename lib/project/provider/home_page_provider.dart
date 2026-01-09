@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:magic_english_project/project/database/database.dart';
 import 'package:magic_english_project/project/dto/category_english.dart';
 import 'package:magic_english_project/project/dto/overview_model.dart';
+import 'package:magic_english_project/project/dto/tracking_activity.dart';
 
 class HomePageProvider extends ChangeNotifier {
   final Database _db = Database();
@@ -10,6 +11,9 @@ class HomePageProvider extends ChangeNotifier {
 
   OverviewModel? _overviewData;
   OverviewModel? get overviewData => _overviewData;
+
+  TrackingActivitiesResponse? _activities;
+  TrackingActivitiesResponse? get activities => _activities;
 
   bool isLoading = false;
 
@@ -21,15 +25,27 @@ class HomePageProvider extends ChangeNotifier {
       final results = await Future.wait([
         _db.getUserCategoryEnglish(),
         _db.getOverviewData(),
+        _db.getTrackingActivities(),
       ]);
 
       categoryEnglish = results[0] as CategoryEnglish;
       _overviewData = results[1] as OverviewModel;
+      _activities = results[2] as TrackingActivitiesResponse;
     } catch (e) {
       debugPrint("Lỗi Provider (initData): $e");
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> reloadActivities({int page = 1}) async {
+    try {
+      _activities = await _db.getTrackingActivities(page: page);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Lỗi Provider (reloadActivities): $e');
+      rethrow;
     }
   }
 
