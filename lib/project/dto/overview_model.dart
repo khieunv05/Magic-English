@@ -15,14 +15,21 @@ class OverviewModel {
 }
 
 class OverviewResult {
+  final int totalDaysJoined;
   final int totalVocabularyLearned;
   final StreakInfo streak;
   final List<Badge> badges;
 
-  OverviewResult({required this.totalVocabularyLearned, required this.streak, required this.badges});
+  OverviewResult({
+    required this.totalDaysJoined,
+    required this.totalVocabularyLearned,
+    required this.streak,
+    required this.badges,
+  });
 
   factory OverviewResult.fromJson(Map<String, dynamic> json) {
     return OverviewResult(
+      totalDaysJoined: (json['total_days_joined'] as num?)?.toInt() ?? 0,
       totalVocabularyLearned: json['total_vocabulary_learned'] ?? 0,
       streak: StreakInfo.fromJson(json['streak'] ?? {}),
       badges: json['badges'] != null

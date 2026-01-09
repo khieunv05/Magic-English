@@ -1,24 +1,32 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:magic_english_project/app/app.dart';
-import 'package:magic_english_project/project/base/shared_preferences_data.dart';
 import 'package:magic_english_project/project/login/signin.dart';
+import 'package:magic_english_project/services/shared_preferences_service.dart';
 class ApiService {
   static Future<Map<String,String>> _getHeader() async{
-    final prefs = SharedPreferencesData.sharedPreferences;
-    final token = prefs.getString('accessToken');
+    final prefs = SharedPreferencesService.instance;
+    final token = prefs.getAccessToken();
     Map<String,String> header = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+
     };
-    if(token != null && token.isNotEmpty){
+    if(token.isNotEmpty){
       header['Authorization'] = 'Bearer $token';
     }
     return header;
   }
   static Future<http.Response> _handleResponse(http.Response response)async{
+    final contentType = response.headers['content-type'] ?? '';
+    if (contentType.contains('text/html') || response.body.trimLeft().startsWith('<!DOCTYPE html')) {
+      throw Exception(
+        'Server trả về HTML (có thể là trang cảnh báo ngrok/đường dẫn sai). Status: ${response.statusCode}',
+      );
+    }
     if(response.statusCode == 401){
-      final prefs = SharedPreferencesData.sharedPreferences;
+      final prefs = SharedPreferencesService.instance;
       await prefs.clear();
       navigatorKey.currentState!.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context){
@@ -48,6 +56,38 @@ class ApiService {
   static Future<http.Response> delete(Uri uri) async{
     Map<String,String>? header = await _getHeader();
     final response = await http.delete(uri,headers: header);
+    return _handleResponse(response);
+  }
+
+  static Future<http.Response> multipartPost(
+    Uri uri, {
+    required Map<String, String> fields,
+    String? fileField,
+    List<int>? fileBytes,
+    String? filename,
+  }) async {
+    final header = await _getHeader();
+
+    // Let MultipartRequest set the content-type with boundary.
+    final multipartHeaders = Map<String, String>.from(header);
+    multipartHeaders.remove('Content-Type');
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(multipartHeaders);
+    request.fields.addAll(fields);
+
+    if (fileField != null && fileBytes != null && fileBytes.isNotEmpty) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fileField,
+          fileBytes,
+          filename: (filename == null || filename.trim().isEmpty) ? 'avatar.jpg' : filename,
+        ),
+      );
+    }
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
     return _handleResponse(response);
   }
 }

@@ -4,6 +4,8 @@ import 'package:magic_english_project/project/vocab/vocab_page.dart';
 import 'package:magic_english_project/core/utils/popup_helper.dart';
 import 'package:magic_english_project/project/dto/notebook.dart';
 import 'package:magic_english_project/project/notebooks/notebook_api.dart';
+import 'package:provider/provider.dart';
+import 'package:magic_english_project/project/provider/home_page_provider.dart';
 
 enum _NotebookFilter { all, favorites }
 
@@ -160,6 +162,7 @@ class _NotebooksPageState extends State<NotebooksPage> {
                                   try {
                                     await NotebookApi.delete(id: notebook.id);
                                     if (!mounted) return;
+                                    await context.read<HomePageProvider>().initData();
                                     showTopNotification(
                                       context,
                                       type: ToastType.success,
@@ -211,11 +214,13 @@ class _NotebooksPageState extends State<NotebooksPage> {
                     ),
 
                     const SizedBox(height: 6),
-                    Text(
-                      '${notebook.vocabulariesCount}',
-                      style: const TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: Text(
+                        '${notebook.vocabulariesCount}',
+                        style: const TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const Text('Từ vựng',
@@ -344,6 +349,7 @@ class _NotebooksPageState extends State<NotebooksPage> {
                                   );
                                   if (!mounted) return;
                                   Navigator.of(ctx).pop();
+                                    await parentContext.read<HomePageProvider>().initData();
                                   showTopNotification(
                                     parentContext,
                                     type: ToastType.success,
@@ -474,6 +480,7 @@ class _NotebooksPageState extends State<NotebooksPage> {
                                 );
                                 if (!mounted) return;
                                 Navigator.pop(ctx);
+                                await context.read<HomePageProvider>().initData();
                                 showTopNotification(
                                   context,
                                   type: ToastType.success,
@@ -601,8 +608,8 @@ class _NotebooksPageState extends State<NotebooksPage> {
                             childAspectRatio: 3 / 3.5,
                             children: _filteredNotebooks.map((notebook) {
                               return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
+                                onTap: () async {
+                                  final result = await Navigator.push<Map<String, dynamic>>(
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) => VocabPage(
@@ -611,6 +618,23 @@ class _NotebooksPageState extends State<NotebooksPage> {
                                       ),
                                     ),
                                   );
+                                  if (!mounted) return;
+                                  final changed = result?['changed'] == true;
+                                  final rawCount = result?['count'];
+                                  final count = rawCount is int
+                                      ? rawCount
+                                      : int.tryParse(rawCount?.toString() ?? '');
+                                  if (changed && count != null) {
+                                    setState(() {
+                                      _notebooks = _notebooks
+                                          .map(
+                                            (n) => n.id == notebook.id
+                                                ? n.copyWith(vocabulariesCount: count)
+                                                : n,
+                                          )
+                                          .toList(growable: false);
+                                    });
+                                  }
                                 },
                                 child: _buildNotebookCard(context, notebook),
                               );

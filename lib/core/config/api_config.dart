@@ -1,3 +1,7 @@
 class ApiConfig {
-  static const String baseUrl = 'https://e90f79743f77.ngrok-free.app';
+  //https://844e1eac2b60.ngrok-free.app
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://kristal-nondichotomous-conclusionally.ngrok-free.dev',
+  );
 }
