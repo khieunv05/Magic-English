@@ -546,6 +546,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
        ),
      );
    }
+   
   Widget _buildBody(BuildContext context, int totalVocab, int streakCount, int totalDaysJoined){
     const Color infoIconColor = Color(0xFF1E88E5);
     const Color amberColor = Color(0xFFFFC107);
